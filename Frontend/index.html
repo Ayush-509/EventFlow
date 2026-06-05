@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,400,0,0&icon_names=search" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventFlow</title>
+
+    <!-- Theme preload (prevents flash of wrong theme) -->
+    <script>
+      (function () {
+        try {
+          const root = document.documentElement;
+          const body = document.body;
+
+          let theme = localStorage.getItem('theme');
+
+          // default fallback
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = 'light';
+            localStorage.setItem('theme', theme);
+          }
+
+          const isDark = theme === 'dark';
+
+          root.classList.toggle('dark', isDark);
+          if (body) body.classList.toggle('dark', isDark);
+        } catch (e) {
+          // fail silently
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
