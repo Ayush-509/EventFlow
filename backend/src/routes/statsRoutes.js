@@ -1,0 +1,33 @@
+import { Router } from 'express';
+import { authenticate } from '../middleware/auth.js';
+
+import {
+  leaderboard,
+  recommendations,
+  summary,
+  trending,
+  dashboardStats,
+} from '../controllers/statsController.js';
+
+const router = Router();
+
+// Public routes
+router.get('/leaderboard', leaderboard);
+router.get('/summary', summary);
+router.get('/trending', trending);
+
+// Protected routes
+router.get(
+  '/recommendations',
+  authenticate,
+  recommendations
+);
+
+router.get(
+  '/dashboard',
+  dashboardStats
+);
+
+export default router;
+
+
