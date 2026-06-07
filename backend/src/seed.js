@@ -40,8 +40,8 @@ async function run() {
     });
 
     const admin = await User.create({
-      name: 'Adam Admin',
-      email: 'admin@example.com',
+      name: 'Admin',
+      email: 'anushikadhaked119@gmail.com',
       password: 'password',
       role: 'admin',
     });
