@@ -144,6 +144,13 @@ END:VCALENDAR`;
           <div className="text-sm text-slate-500 dark:text-slate-400">
             {new Date(event.date).toLocaleString()} • {event.location}
           </div>
+          <div className="text-amber-500 font-medium">
+         ⭐ {event.averageRating?.toFixed?.(1) || "0.0"} / 5
+          </div>
+
+          <div className="text-sm text-slate-600 dark:text-slate-300">
+            {reviews.length} Review{reviews.length !== 1 ? "s" : ""}
+          </div>
           <div className="flex flex-wrap gap-3 mt-3">
             <button className="btn" onClick={register} disabled={!user}>
               Register
