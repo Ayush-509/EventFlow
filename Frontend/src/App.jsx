@@ -5,6 +5,9 @@ import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Pass from './pages/Pass.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
+import ChangePassword from './pages/ChangePassword.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { useEffect, useState } from 'react';
 
@@ -12,7 +15,9 @@ function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 }
@@ -95,6 +100,15 @@ function Navbar() {
             </Link>
           )}
 
+          {user && (
+            <Link
+              to="/change-password"
+              className="transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-300"
+            >
+              Change Password
+            </Link>
+          )}
+
           {user ? (
             <button onClick={logout} className="btn-outline">
               Logout
@@ -163,16 +177,18 @@ function Layout({ children }) {
 
       <footer className="mt-16 border-t border-blue-100 dark:border-purple-500/20 bg-white/80 dark:bg-slate-950/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-6 text-sm text-slate-600 dark:text-slate-400 flex items-center justify-between">
-            <p className="mt-1">
-              Source code on{' '}
-              <Link
-                to="https://github.com/Ayush-509/EventFlow.git"
-                className="font-bold text-blue-600 dark:text-purple-300 hover:underline"
-              >
-                GitHub
-              </Link>
-              .
-            </p>
+          <p className="mt-1">
+            Source code on{' '}
+            <a
+              href="https://github.com/Ayush-509/EventFlow.git"
+              target="_blank"
+              rel="noreferrer"
+              className="font-bold text-blue-600 dark:text-purple-300 hover:underline"
+            >
+              GitHub
+            </a>
+            .
+          </p>
 
           <p className="text-right">
             © {new Date().getFullYear()}{' '}
@@ -183,15 +199,15 @@ function Layout({ children }) {
           </p>
 
           <p className="mt-1">
-              Contact us{' '}
-              <Link
-                to="/"
-                className="font-bold text-blue-600 dark:text-purple-300 hover:underline"
-              >
-                help@event.com
-              </Link>
-              .
-            </p>
+            Contact us{' '}
+            <a
+              href="mailto:help@event.com"
+              className="font-bold text-blue-600 dark:text-purple-300 hover:underline"
+            >
+              help@event.com
+            </a>
+            .
+          </p>
         </div>
       </footer>
     </div>
@@ -206,8 +222,31 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventDetails />} />
+
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPassword />}
+            />
+
+            <Route
+              path="/change-password"
+              element={
+                <PrivateRoute
+                  roles={['customer', 'organizer', 'admin']}
+                >
+                  <ChangePassword />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/pass"
               element={
@@ -216,6 +255,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+
             <Route
               path="/dashboard"
               element={
