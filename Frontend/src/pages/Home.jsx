@@ -157,7 +157,7 @@ export default function Home() {
       <div className="rounded-3xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-wrap items-center gap-3 shadow-sm">
 
   <div className="flex-1 min-w-[250px] flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
-    <span class="material-symbols-outlined px-3 text-slate-500">search</span>
+    <span className="material-symbols-outlined px-3 text-slate-500">search</span>
 
     <input
       type="text"
