@@ -1,11 +1,13 @@
 import express from "express";
-import mongoose from "mongoose";
+import connectDB from "./src/config/mongodb.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import eventRoutes from "./src/routes/eventRoutes.js";
 import statsRoutes from "./src/routes/statsRoutes.js";
 import reviewRoutes from "./src/routes/reviewRoutes.js";
 import adminEventRoutes from "./src/routes/adminEventRoutes.js";
+import registrationRoutes from "./src/routes/registrationRoutes.js";
+
 
 import path from "path";
 
@@ -18,14 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("MongoDB Connected");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+connectDB()
 
 app.get("/", (req, res) => {
   res.send("EventFlow Backend Running");
@@ -40,6 +35,8 @@ app.use(
   express.static(path.join(process.cwd(), "uploads"))
 );
 app.use("/api/admin", adminEventRoutes);
+
+app.use("/api/registrations", registrationRoutes);
 
 const PORT =
   process.env.PORT || 5000;
