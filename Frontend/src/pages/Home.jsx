@@ -110,13 +110,17 @@ export default function Home() {
           {e.description}
         </p>
 
-        <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-          {new Date(e.date).toLocaleString()} • {e.location}
-        </div>
+       <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+  {new Date(e.date).toLocaleString()} • {e.location}
+</div>
 
-        <div className="mt-2 text-amber-500 text-sm font-medium">
-          ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
-        </div>
+<div className="mt-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
+  ₹ {e.price || 0}
+</div>
+
+<div className="mt-2 text-amber-500 text-sm font-medium">
+  ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
+</div>
       </div>
     </Link>
   );
