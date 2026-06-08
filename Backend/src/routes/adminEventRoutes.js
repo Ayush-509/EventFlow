@@ -13,8 +13,8 @@ const router = express.Router();
 router.use(protect);
 router.use(authAdmin);
 
-// GET pending events
-router.get("/events/pending", getPendingEvents);
+// GET Pending events
+router.get("/events/Pending", getPendingEvents);
 
 router.post("/events/:id/approve", approveEvent);
 

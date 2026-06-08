@@ -89,6 +89,13 @@ export default function Login() {
           >
             Login
           </button>
+
+          <div className="flex flex-col items-center">
+            <p>admin@gmail.com</p>
+            <p>user@gmail.com</p>
+            <p>org@gmail.com</p>
+            <p>EventFLow</p>
+          </div>
         </form>
 
         {/* Signup link */}

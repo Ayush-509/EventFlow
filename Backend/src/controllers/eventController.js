@@ -145,7 +145,7 @@ export const createEvent = async (req, res) => {
       poster: req.file ? req.file.filename : "",
 
       organizer: req.user?._id,
-      status: "pending",
+      status: "Pending",
     });
 
     res.status(201).json({
