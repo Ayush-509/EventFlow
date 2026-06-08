@@ -1,4 +1,5 @@
 import Event from "../models/event.js";
+import Review from "../models/review.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -46,12 +47,29 @@ export const getEvents = async (req, res) => {
       .populate("organizer", "name email")
       .sort({ createdAt: -1 });
 
-    const eventsWithPoster = events.map((event) => ({
+    const eventsWithPoster = await Promise.all(
+  events.map(async (event) => {
+    const reviews = await Review.find({
+      event: event._id,
+    });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          ) / reviews.length
+        : 0;
+
+    return {
       ...event.toObject(),
+      averageRating,
       posterUrl: event.poster
         ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
         : "",
-    }));
+    };
+  })
+);
 
     res.status(200).json({
       success: true,
@@ -81,7 +99,21 @@ export const getEventById = async (req, res) => {
       });
     }
 
+    const reviews = await Review.find({
+      event: event._id,
+    });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          ) / reviews.length
+        : 0;
+
     const eventObj = event.toObject();
+
+    eventObj.averageRating = averageRating;
 
     eventObj.posterUrl = event.poster
       ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
