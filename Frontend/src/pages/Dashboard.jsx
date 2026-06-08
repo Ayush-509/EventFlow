@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
+  const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Tech');
   const [description, setDescription] = useState('');
   const [poster, setPoster] = useState(null);
@@ -32,7 +33,7 @@ export default function Dashboard() {
   }, [user]);
 
   async function loadMyRegs() {
-    const res = await axios.get('/api/registrations/me');
+    const res = await axios.get('/api/registrations/my');
     setMine(res.data.registrations || []);
   }
 
@@ -81,8 +82,9 @@ export default function Dashboard() {
     const fd = new FormData();
     fd.append('title', title);
     fd.append('date', date);
-    fd.append('location', location);
-    fd.append('category', category);
+   fd.append('location', location);
+   fd.append('price', price);
+   fd.append('category', category);
     fd.append('description', description);
     if (poster) fd.append('poster', poster);
 
@@ -91,8 +93,10 @@ export default function Dashboard() {
     setTitle('');
     setDate('');
     setLocation('');
+    setPrice('');
     setDescription('');
     setPoster(null);
+  
 
     await loadMyEvents();
     showToast('success', 'Event created successfully');
@@ -211,6 +215,8 @@ export default function Dashboard() {
             <input className="input w-full mb-2" placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
             <input className="input w-full mb-2" type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} />
             <input className="input w-full mb-2" placeholder="Location" value={location} onChange={(e)=>setLocation(e.target.value)} />
+            <input className="input w-full mb-2" type="number" min="0" placeholder="Price (₹)" value={price} onChange={(e)=>setPrice(e.target.value)} />
+
             <select className="input w-full mb-2" value={category} onChange={(e)=>setCategory(e.target.value)}>
               <option>Tech</option><option>Sports</option><option>Cultural</option><option>Workshop</option>
             </select>
