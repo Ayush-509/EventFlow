@@ -7,10 +7,16 @@ const eventSchema = new mongoose.Schema(
     category: String,
     location: String,
     date: Date,
+
+    price: {
+      type: Number,
+      default: 0,
+    },
+
     poster: {
-  type: String,
-  default: "",
-},
+      type: String,
+      default: "",
+    },
 
     organizer: {
       type: mongoose.Schema.Types.ObjectId,
