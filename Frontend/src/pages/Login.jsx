@@ -94,7 +94,7 @@ export default function Login() {
             <p>admin@gmail.com</p>
             <p>user@gmail.com</p>
             <p>org@gmail.com</p>
-            <p>EventFLow</p>
+            <p>EventFlow</p>
           </div>
         </form>
 
