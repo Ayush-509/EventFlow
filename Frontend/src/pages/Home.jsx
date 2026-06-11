@@ -16,6 +16,8 @@ export default function Home() {
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const [sortDir, setSortDir] = useState('asc');
+  const [priceFilter, setPriceFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const categories = ["All","Tech","Startup","Entertainment","Hackathon","Music","Sports","Education","Business","Workshop","Cultural","Gaming"];
   const { announcements } = useSocket(window.location.origin);
   const { user } = useAuth();
@@ -72,19 +74,22 @@ export default function Home() {
     setSortDir(newDir);
   };
 
-  const sortedEvents = sortEvents(events, sortBy, sortDir);
-
   const getEventStatus = (dateISO) => {
     const now = new Date();
     const eventDate = new Date(dateISO);
-
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-
     if (eventDay > today) return 'upcoming';
     if (eventDay.getTime() === today.getTime()) return 'ongoing';
     return 'finished';
   };
+
+  const filteredEvents = sortEvents(events, sortBy, sortDir).filter((e) => {
+    if (priceFilter === 'free' && (e.price ?? 0) !== 0) return false;
+    if (priceFilter === 'paid' && (e.price ?? 0) === 0) return false;
+    if (statusFilter && getEventStatus(e.date) !== statusFilter) return false;
+    return true;
+  });
 
   const Badge = ({ date }) => {
     const status = getEventStatus(date);
@@ -166,6 +171,19 @@ export default function Home() {
     </div>
   );
 
+  const FilterChip = ({ label, value, active, onClick }) => (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 rounded-full text-sm border transition ${
+        active
+          ? 'bg-blue-600 text-white border-blue-600 dark:bg-purple-600 dark:border-purple-600'
+          : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-blue-400 dark:hover:border-purple-500'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="space-y-10">
       {error && (
@@ -191,7 +209,6 @@ export default function Home() {
 
         <div className="flex-1 min-w-[250px] flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
           <span className="material-symbols-outlined px-3 text-slate-500">search</span>
-
           <input
             type="text"
             placeholder="Search events..."
@@ -211,7 +228,6 @@ export default function Home() {
         <div className="flex flex-wrap gap-2 w-full">
           {categories.map((c) => {
             const active = (c === 'All' && !category) || c === category;
-
             return (
               <button
                 key={c}
@@ -232,6 +248,41 @@ export default function Home() {
           })}
         </div>
 
+        {/* Price filter */}
+        <div className="flex flex-wrap items-center gap-2 w-full">
+          <span className="text-sm text-slate-500 dark:text-slate-400">Price:</span>
+          {[
+            { label: 'All', value: '' },
+            { label: 'Free', value: 'free' },
+            { label: 'Paid', value: 'paid' },
+          ].map((opt) => (
+            <FilterChip
+              key={opt.value}
+              label={opt.label}
+              active={priceFilter === opt.value}
+              onClick={() => setPriceFilter(opt.value)}
+            />
+          ))}
+        </div>
+
+        {/* Status filter */}
+        <div className="flex flex-wrap items-center gap-2 w-full">
+          <span className="text-sm text-slate-500 dark:text-slate-400">Status:</span>
+          {[
+            { label: 'All', value: '' },
+            { label: 'Upcoming', value: 'upcoming' },
+            { label: 'Ongoing', value: 'ongoing' },
+            { label: 'Finished', value: 'finished' },
+          ].map((opt) => (
+            <FilterChip
+              key={opt.value}
+              label={opt.label}
+              active={statusFilter === opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+            />
+          ))}
+        </div>
+
       </div>
 
       {recs.length > 0 && (
@@ -239,7 +290,6 @@ export default function Home() {
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
             Recommended for you
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recs.map((e) => (
               <Card key={e._id} e={e} />
@@ -259,7 +309,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} />)
-            : sortedEvents.map((e) => <Card key={e._id} e={e} />)}
+            : filteredEvents.map((e) => <Card key={e._id} e={e} />)}
         </div>
       </section>
 
@@ -274,7 +324,6 @@ export default function Home() {
               <div className="font-semibold mb-2 text-slate-700 dark:text-slate-200">
                 By category
               </div>
-
               <ul className="space-y-2">
                 {dash.categories.map((c) => (
                   <li
@@ -282,9 +331,7 @@ export default function Home() {
                     className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
                   >
                     <span>{c._id || 'Uncategorized'}</span>
-                    <span className="text-slate-600 dark:text-slate-300">
-                      {c.count}
-                    </span>
+                    <span className="text-slate-600 dark:text-slate-300">{c.count}</span>
                   </li>
                 ))}
               </ul>
@@ -294,7 +341,6 @@ export default function Home() {
               <div className="font-semibold mb-2 text-slate-700 dark:text-slate-200">
                 Upcoming (next months)
               </div>
-
               <ul className="space-y-2">
                 {dash.upcomingByMonth.map((m) => (
                   <li
@@ -302,9 +348,7 @@ export default function Home() {
                     className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700"
                   >
                     <span>{m._id}</span>
-                    <span className="text-slate-600 dark:text-slate-300">
-                      {m.count}
-                    </span>
+                    <span className="text-slate-600 dark:text-slate-300">{m.count}</span>
                   </li>
                 ))}
               </ul>
