@@ -1,12 +1,12 @@
 import Event from "../models/event.js";
 
 /**
- * GET all pending events
+ * GET all Pending events
  */
 export const getPendingEvents = async (req, res) => {
   try {
     const events = await Event.find({
-      status: "pending",
+      status: "Pending",
     }).populate("organizer", "name email");
 
     res.status(200).json({
@@ -37,13 +37,13 @@ export const approveEvent = async (req, res) => {
       });
     }
 
-    event.status = "approved";
+    event.status = "Approved";
 
     await event.save();
 
     res.status(200).json({
       success: true,
-      message: "Event approved successfully",
+      message: "Event Approved successfully",
       event,
     });
   } catch (error) {
@@ -70,13 +70,13 @@ export const rejectEvent = async (req, res) => {
       });
     }
 
-    event.status = "rejected";
+    event.status = "Rejected";
 
     await event.save();
 
     res.status(200).json({
       success: true,
-      message: "Event rejected successfully",
+      message: "Event Rejected successfully",
       event,
     });
   } catch (error) {

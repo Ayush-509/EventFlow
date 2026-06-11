@@ -64,19 +64,40 @@ export default function Home() {
   }
 
 
-  const Badge = ({ status }) => (
-    <span
-      className={`text-xs px-3 py-1 rounded-full border font-medium ${
-        status === 'Approved'
-          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800'
-          : status === 'Pending'
-          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800'
-          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800'
-      }`}
-    >
-      {status}
+  const getEventStatus = (dateISO) => {
+  const now = new Date();
+  const eventDate = new Date(dateISO);
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+
+  if (eventDay > today) return 'upcoming';
+  if (eventDay.getTime() === today.getTime()) return 'ongoing';
+  return 'finished';
+};
+
+const Badge = ({ date }) => {
+  const status = getEventStatus(date);
+
+  const styles = {
+    upcoming: 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
+    ongoing:  'bg-green-50 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800',
+    finished: 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-800/40 dark:text-gray-400 dark:border-gray-700',
+  };
+
+  const labels = {
+    upcoming: 'Upcoming',
+    ongoing:  'Ongoing',
+    finished: 'Finished',
+  };
+
+  return (
+    <span className={`text-xs px-3 py-1 rounded-full border font-medium ${styles[status]}`}>
+      {labels[status]}
     </span>
   );
+};
+
 
   const Card = ({ e }) => (
     <Link
@@ -95,7 +116,7 @@ export default function Home() {
       />
 
       <div className="absolute top-3 left-3 flex items-center gap-2">
-        <Badge status={e.status} />
+        <Badge date={e.date} />
         <span className="text-xs px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700">
           {e.category}
         </span>
@@ -110,13 +131,17 @@ export default function Home() {
           {e.description}
         </p>
 
-        <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-          {new Date(e.date).toLocaleString()} • {e.location}
-        </div>
+       <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+  {new Date(e.date).toLocaleString()} • {e.location}
+</div>
 
-        <div className="mt-2 text-amber-500 text-sm font-medium">
-          ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
-        </div>
+<div className="mt-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
+  ₹ {e.price || 0}
+</div>
+
+<div className="mt-2 text-amber-500 text-sm font-medium">
+  ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
+</div>
       </div>
     </Link>
   );

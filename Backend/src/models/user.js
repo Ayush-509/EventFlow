@@ -49,6 +49,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // 🔐 FORGOT PASSWORD SUPPORT
+    resetPasswordToken: {
+      type: String,
+    },
+
+    resetPasswordExpire: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -56,6 +65,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function () {
+  // only hash if password is modified
   if (!this.isModified("password")) {
     return;
   }
@@ -64,6 +74,7 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
+// compare password
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };

@@ -11,10 +11,11 @@ export default function Dashboard() {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
+  const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Tech');
   const [description, setDescription] = useState('');
   const [poster, setPoster] = useState(null);
-  const [pending, setPending] = useState([]);
+  const [Pending, setPending] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [downloadAction, setDownloadAction] = useState(null);
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
@@ -32,7 +33,7 @@ export default function Dashboard() {
   }, [user]);
 
   async function loadMyRegs() {
-    const res = await axios.get('/api/registrations/me');
+    const res = await axios.get('/api/registrations/my');
     setMine(res.data.registrations || []);
   }
 
@@ -42,7 +43,7 @@ export default function Dashboard() {
   }
 
   async function loadPending() {
-    const res = await axios.get('/api/events', { params: { status: 'pending' } });
+    const res = await axios.get('/api/events', { params: { status: 'Pending' } });
     setPending(res.data.events || []);
   }
 
@@ -81,8 +82,9 @@ export default function Dashboard() {
     const fd = new FormData();
     fd.append('title', title);
     fd.append('date', date);
-    fd.append('location', location);
-    fd.append('category', category);
+   fd.append('location', location);
+   fd.append('price', price);
+   fd.append('category', category);
     fd.append('description', description);
     if (poster) fd.append('poster', poster);
 
@@ -91,8 +93,10 @@ export default function Dashboard() {
     setTitle('');
     setDate('');
     setLocation('');
+    setPrice('');
     setDescription('');
     setPoster(null);
+  
 
     await loadMyEvents();
     showToast('success', 'Event created successfully');
@@ -211,9 +215,22 @@ export default function Dashboard() {
             <input className="input w-full mb-2" placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
             <input className="input w-full mb-2" type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} />
             <input className="input w-full mb-2" placeholder="Location" value={location} onChange={(e)=>setLocation(e.target.value)} />
-            <select className="input w-full mb-2" value={category} onChange={(e)=>setCategory(e.target.value)}>
-              <option>Tech</option><option>Sports</option><option>Cultural</option><option>Workshop</option>
+            <input className="input w-full mb-2" type="number" min="0" placeholder="Price (₹)" value={price} onChange={(e)=>setPrice(e.target.value)} />
+
+            <select className="input w-full mb-2" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option>Tech</option>
+              <option>Startup</option>
+              <option>Entertainment</option>
+              <option>Hackathon</option>
+              <option>Music</option>
+              <option>Sports</option>
+              <option>Education</option>
+              <option>Business</option>
+              <option>Workshop</option>
+              <option>Cultural</option>
+              <option>Gaming</option>
             </select>
+            
             <textarea className="input w-full mb-2" value={description} onChange={(e)=>setDescription(e.target.value)} />
             <input type="file" onChange={(e)=>setPoster(e.target.files[0])} className="mb-3" />
             <button className="btn w-full">Publish</button>
@@ -225,7 +242,7 @@ export default function Dashboard() {
       {user?.role === 'admin' && (
         <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
           <h2 className="font-semibold mb-3">Pending Events</h2>
-          {pending.map((e) => (
+          {Pending.map((e) => (
             <div key={e._id} className="flex justify-between items-center p-2 border rounded-lg mb-2">
               <span>{e.title}</span>
               <div className="flex gap-2">

@@ -1,13 +1,9 @@
 import Event from "../models/event.js";
+import Review from "../models/review.js";
 
 export const getEvents = async (req, res) => {
   try {
-    const {
-      search,
-      category,
-      location,
-      status,
-    } = req.query;
+    const { search, category, location, status } = req.query;
 
     let query = {};
 
@@ -51,9 +47,33 @@ export const getEvents = async (req, res) => {
       .populate("organizer", "name email")
       .sort({ createdAt: -1 });
 
+    const eventsWithPoster = await Promise.all(
+  events.map(async (event) => {
+    const reviews = await Review.find({
+      event: event._id,
+    });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          ) / reviews.length
+        : 0;
+
+    return {
+      ...event.toObject(),
+      averageRating,
+      posterUrl: event.poster
+        ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+        : "",
+    };
+  })
+);
+
     res.status(200).json({
       success: true,
-      events,
+      events: eventsWithPoster,
     });
   } catch (error) {
     console.log(error);
@@ -67,7 +87,10 @@ export const getEvents = async (req, res) => {
 
 export const getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate(
+      "organizer",
+      "name email"
+    );
 
     if (!event) {
       return res.status(404).json({
@@ -76,9 +99,29 @@ export const getEventById = async (req, res) => {
       });
     }
 
+    const reviews = await Review.find({
+      event: event._id,
+    });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          ) / reviews.length
+        : 0;
+
+    const eventObj = event.toObject();
+
+    eventObj.averageRating = averageRating;
+
+    eventObj.posterUrl = event.poster
+      ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+      : "";
+
     res.status(200).json({
       success: true,
-      event,
+      event: eventObj,
     });
   } catch (error) {
     res.status(500).json({
@@ -88,20 +131,21 @@ export const getEventById = async (req, res) => {
   }
 };
 
-//API to create event
+// Create Event
 export const createEvent = async (req, res) => {
   try {
-    
     const event = await Event.create({
       title: req.body.title,
-      eventType: req.body.eventType,
+      category: req.body.category,
       description: req.body.description,
       date: req.body.date,
       location: req.body.location,
-      poster: req.file
-        ? req.file.filename
-        : "",
-      status: "pending",
+      price: Number(req.body.price || 0),
+
+      poster: req.file ? req.file.filename : "",
+
+      organizer: req.user?._id,
+      status: "Pending",
     });
 
     res.status(201).json({
@@ -138,16 +182,27 @@ export const updateEvent = async (req, res) => {
       req.body.location || event.location;
     event.date = req.body.date || event.date;
 
+    if (req.body.price !== undefined) {
+      event.price = Number(req.body.price);
+    }
+
     if (req.file) {
       event.poster = req.file.filename;
     }
 
     await event.save();
 
+    const updatedEvent = {
+      ...event.toObject(),
+      posterUrl: event.poster
+        ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+        : "",
+    };
+
     res.status(200).json({
       success: true,
       message: "Event updated successfully",
-      event,
+      event: updatedEvent,
     });
   } catch (error) {
     console.error(error);

@@ -14,12 +14,19 @@ export default function Login() {
   async function submit(e) {
     e.preventDefault();
     setError('');
+
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', {
+        email,
+        password,
+      });
+
       login(res.data);
       nav('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(
+        err.response?.data?.message || 'Login failed'
+      );
     }
   }
 
@@ -47,9 +54,13 @@ export default function Login() {
         >
           <input
             className="input w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+            type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            required
           />
 
           <input
@@ -57,14 +68,34 @@ export default function Login() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            required
           />
 
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 dark:text-purple-400 hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
           <button
+            type="submit"
             className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-semibold transition"
           >
             Login
           </button>
+
+          <div className="flex flex-col items-center">
+            <p>admin@gmail.com</p>
+            <p>user@gmail.com</p>
+            <p>org@gmail.com</p>
+            <p>EventFlow</p>
+          </div>
         </form>
 
         {/* Signup link */}
