@@ -12,6 +12,7 @@ export default function EventDetails() {
   const [rating, setRating] = useState(5);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
+  const [registered, setRegistered] = useState(false);
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -35,19 +36,50 @@ export default function EventDetails() {
         const userReview = r.data.reviews?.find(review => review.user?._id === user.id);
         setHasReviewed(!!userReview);
       }
+
+      if (user) {
+  const statusRes = await axios.get(
+    `/api/registrations/${id}/status`,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  setRegistered(statusRes.data.registered);
+}
     } catch (err) {
       showToast('error', 'Failed to load event details.');
     }
   }
 
-  async function register() {
-    try {
-      await axios.post(`/api/registrations/${id}/register`);
-      showToast('success', 'Registered! Check your email for confirmation.');
-    } catch {
-      showToast('error', 'Registration failed. Try again.');
-    }
+  async function registerEvent() {
+  try {
+    await axios.post(
+      `/api/registrations/${id}/register`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    setRegistered(true);
+
+    showToast(
+      "success",
+      "Successfully registered!"
+    );
+  } catch (error) {
+    showToast(
+      "error",
+      error.response?.data?.message ||
+        "Registration failed"
+    );
   }
+}
 
   function shareEvent() {
     const url = window.location.href;
@@ -145,8 +177,11 @@ END:VCALENDAR`;
             {new Date(event.date).toLocaleString()} • {event.location}
           </div>
           <div className="flex flex-wrap gap-3 mt-3">
-            <button className="btn" onClick={register} disabled={!user}>
-              Register
+            <button
+              onClick={registerEvent}
+              disabled={registered}
+              className={`px-4 py-2 rounded ${registered ? "bg-green-500 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600" } text-white`}>
+              {registered ? "Registered" : "Register"}
             </button>
             <button className="btn-outline" onClick={shareEvent}>
               Share
