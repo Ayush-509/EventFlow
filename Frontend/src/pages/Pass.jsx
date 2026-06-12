@@ -6,7 +6,16 @@ export default function Pass() {
 
   useEffect(() => {
     (async () => {
-      const r = await axios.get('/api/registrations/me');
+      const token = localStorage.getItem("token");
+
+const r = await axios.get(
+  "/api/registrations/my",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
       setRegs(r.data.registrations || []);
     })();
   }, []);
@@ -56,6 +65,11 @@ export default function Pass() {
             <div className="text-sm text-slate-600 dark:text-slate-300 mt-2">
               {r.event?.location}
             </div>
+            <div className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+              <p><strong>Ticket ID:</strong> {r.ticketId}</p>
+              <p><strong>Type:</strong> {r.ticketType}</p>
+              <p> <strong>Price:</strong> ₹{r.price} </p>
+            </div>
 
             {r.qrCodeDataUrl && (
               <div className="mt-4 flex justify-center">
@@ -66,6 +80,50 @@ export default function Pass() {
                 />
               </div>
             )}
+<button
+  onClick={async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      console.log("TOKEN:", token);
+
+      const response = await axios.get(
+        `http://localhost:5000/api/tickets/download/${r._id}`,
+        {
+          responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("SUCCESS", response);
+
+      const url = window.URL.createObjectURL(
+        new Blob([response.data])
+      );
+
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `${r.ticketId}.pdf`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+    } catch (error) {
+  console.log("FULL ERROR:", error);
+  console.log("MESSAGE:", error.message);
+  console.log("RESPONSE:", error.response);
+  console.log("REQUEST:", error.request);
+}
+  }}
+  className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-white"
+>
+  Download Ticket PDF
+</button>
           </div>
         ))}
       </div>

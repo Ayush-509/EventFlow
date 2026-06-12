@@ -140,7 +140,13 @@ export const createEvent = async (req, res) => {
       description: req.body.description,
       date: req.body.date,
       location: req.body.location,
-      price: Number(req.body.price || 0),
+
+      ticketPrices: {
+        General: Number(req.body.generalPrice || 0),
+        VIP: Number(req.body.vipPrice || 0),
+        Premium: Number(req.body.premiumPrice || 0),
+        Student: Number(req.body.studentPrice || 0),
+      },
 
       poster: req.file ? req.file.filename : "",
 

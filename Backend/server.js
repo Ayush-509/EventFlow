@@ -7,6 +7,7 @@ import statsRoutes from "./src/routes/statsRoutes.js";
 import reviewRoutes from "./src/routes/reviewRoutes.js";
 import adminEventRoutes from "./src/routes/adminEventRoutes.js";
 import registrationRoutes from "./src/routes/registrationRoutes.js";
+import ticketRoutes from "./src/routes/ticketRoutes.js";
 
 
 import path from "path";
@@ -16,8 +17,12 @@ import authRoutes from "./src/routes/authRoutes.js";
 dotenv.config();
 
 const app = express();
-
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 connectDB()
@@ -37,6 +42,7 @@ app.use(
 app.use("/api/admin", adminEventRoutes);
 
 app.use("/api/registrations", registrationRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 const PORT =
   process.env.PORT || 5000;

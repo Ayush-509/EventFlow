@@ -264,6 +264,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+            <Route path="/passes" element={<Pass />} />
           </Routes>
         </Layout>
       </BrowserRouter>

@@ -19,6 +19,37 @@ const registrationSchema = new mongoose.Schema(
       enum: ["registered", "cancelled"],
       default: "registered",
     },
+
+    ticketType: {
+      type: String,
+      enum: [
+        "General",
+        "VIP",
+        "Premium",
+        "Student",
+      ],
+      default: "General",
+    },
+
+    ticketId: {
+      type: String,
+      unique: true,
+    },
+
+    price: {
+      type: Number,
+      default: 0,
+    },
+
+    qrCodeDataUrl: {
+      type: String,
+      default: "",
+    },
+
+    barcodeDataUrl: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

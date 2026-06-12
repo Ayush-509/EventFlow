@@ -10,7 +10,7 @@ export default function EventTicket({ registration, onDownload, onReady }) {
 
     try {
       const canvas = await html2canvas(ticketRef.current, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         backgroundColor: null,
       });
@@ -22,7 +22,11 @@ export default function EventTicket({ registration, onDownload, onReady }) {
       const margin = 10;
       const contentWidth = pageWidth - margin * 2;
 
-      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+      const imgHeight = Math.min(
+  190,
+  (canvas.height * contentWidth) /
+  canvas.width
+);
 
       pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, imgHeight);
 
@@ -53,9 +57,9 @@ export default function EventTicket({ registration, onDownload, onReady }) {
 
         {/* TICKET */}
         <div
-          ref={ticketRef}
-          className="relative w-[980px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl backdrop-blur-xl bg-white/10 dark:bg-slate-900/40"
-        >
+  ref={ticketRef}
+  className="relative w-full max-w-[980px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl backdrop-blur-xl bg-white/10 dark:bg-slate-900/40"
+>
 
           {/* SHINE ANIMATION */}
           <div className="absolute inset-0 overflow-hidden">
@@ -70,6 +74,11 @@ export default function EventTicket({ registration, onDownload, onReady }) {
               {/* HEADER */}
               <div className="flex justify-between items-start mb-6">
                 <div>
+                  <img
+  src="/logo.png"
+  alt="logo"
+  className="h-10 mb-2"
+/>
                   <div className="text-xs tracking-[0.35em] text-cyan-300 uppercase">
                     EventFlow Wallet Pass
                   </div>
@@ -91,6 +100,12 @@ export default function EventTicket({ registration, onDownload, onReady }) {
               <div className="mt-2 text-cyan-300 uppercase tracking-wider text-sm">
                 {event?.category} EVENT
               </div>
+              <div className="mt-4 inline-block px-4 py-2 rounded-full bg-white/10 border border-cyan-400 text-cyan-300 text-sm">
+  {registration.ticketType}
+</div>
+<div className="mt-3 text-pink-300 font-semibold text-lg">
+ ₹ {registration.price}
+</div>
 
               {/* DATE BLOCK */}
               <div className="mt-7 flex gap-10">
@@ -116,9 +131,22 @@ export default function EventTicket({ registration, onDownload, onReady }) {
               <div className="mt-5 text-sm text-slate-300">
                 📍 {event?.location}
               </div>
+              <div className="mt-4 text-xs text-slate-400">
+ Ticket ID
+</div>
+
+<div className="text-sm text-slate-200">
+ {registration.ticketId}
+</div>
 
               {/* BARCODE STRIP */}
-              <div className="mt-8 h-12 w-60 rounded-lg bg-[repeating-linear-gradient(90deg,#fff_0,#fff_2px,transparent_2px,transparent_6px)] opacity-70" />
+              {registration.barcodeDataUrl && (
+  <img
+    src={registration.barcodeDataUrl}
+    alt="Barcode"
+    className="mt-8 h-16 w-full object-contain bg-white rounded-lg p-2"
+  />
+)}
             </div>
 
             {/* DIVIDER */}
@@ -137,7 +165,7 @@ export default function EventTicket({ registration, onDownload, onReady }) {
                   <img
                     src={registration.qrCodeDataUrl}
                     alt="QR"
-                    className="mx-auto w-36 h-36 rounded-lg bg-white p-1"
+                    className="mx-auto w-44 h-44 rounded-xl bg-white p-2"
                   />
                 )}
               </div>

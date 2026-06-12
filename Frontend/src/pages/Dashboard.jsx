@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import EventTicket from '../components/EventTicket.jsx';
 
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [mine, setMine] = useState([]);
@@ -19,6 +20,10 @@ export default function Dashboard() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [downloadAction, setDownloadAction] = useState(null);
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
+  const [generalPrice, setGeneralPrice] = useState("");
+  const [vipPrice, setVipPrice] = useState("");
+  const [premiumPrice, setPremiumPrice] = useState("");
+  const [studentPrice, setStudentPrice] = useState("");
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -86,6 +91,10 @@ export default function Dashboard() {
    fd.append('price', price);
    fd.append('category', category);
     fd.append('description', description);
+    fd.append("generalPrice", generalPrice);
+    fd.append("vipPrice", vipPrice);
+    fd.append("premiumPrice", premiumPrice);
+    fd.append("studentPrice", studentPrice);
     if (poster) fd.append('poster', poster);
 
     await axios.post('/api/events', fd);
@@ -215,7 +224,41 @@ export default function Dashboard() {
             <input className="input w-full mb-2" placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
             <input className="input w-full mb-2" type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} />
             <input className="input w-full mb-2" placeholder="Location" value={location} onChange={(e)=>setLocation(e.target.value)} />
-            <input className="input w-full mb-2" type="number" min="0" placeholder="Price (₹)" value={price} onChange={(e)=>setPrice(e.target.value)} />
+            <input
+  className="input w-full mb-2"
+  type="number"
+  min="0"
+  placeholder="General Ticket Price (₹)"
+  value={generalPrice}
+  onChange={(e) => setGeneralPrice(e.target.value)}
+/>
+
+<input
+  className="input w-full mb-2"
+  type="number"
+  min="0"
+  placeholder="VIP Ticket Price (₹)"
+  value={vipPrice}
+  onChange={(e) => setVipPrice(e.target.value)}
+/>
+
+<input
+  className="input w-full mb-2"
+  type="number"
+  min="0"
+  placeholder="Premium Ticket Price (₹)"
+  value={premiumPrice}
+  onChange={(e) => setPremiumPrice(e.target.value)}
+/>
+
+<input
+  className="input w-full mb-2"
+  type="number"
+  min="0"
+  placeholder="Student Ticket Price (₹)"
+  value={studentPrice}
+  onChange={(e) => setStudentPrice(e.target.value)}
+/>
 
             <select className="input w-full mb-2" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option>Tech</option>
@@ -272,8 +315,7 @@ export default function Dashboard() {
                   <button
                     disabled={!downloadAction}
                     onClick={() => downloadAction && downloadAction()}
-                    className="px-3 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                  >
+                    className="px-3 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
                     Download
                   </button>
                   <button
@@ -286,13 +328,13 @@ export default function Dashboard() {
               </div>
 
               {/* Ticket */}
-              <div className="p-4">
-                <EventTicket
-                  registration={selectedTicket}
-                  user={user}
-                  onReady={(fn) => setDownloadAction(() => fn)}
-                />
-              </div>
+<div className="p-4 bg-slate-950">
+  <EventTicket
+    registration={selectedTicket}
+    user={user}
+    onReady={setDownloadAction}
+  />
+</div>
             </div>
           </div>
         </div>
