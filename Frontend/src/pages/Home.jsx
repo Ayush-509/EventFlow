@@ -15,7 +15,7 @@ export default function Home() {
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
   const [sortBy, setSortBy] = useState('date');
-  const [sortDir, setSortDir] = useState('asc');
+  const [sortDir, setSortDir] = useState('desc');
   const [priceFilter, setPriceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const categories = ["All","Tech","Startup","Entertainment","Hackathon","Music","Sports","Education","Business","Workshop","Cultural","Gaming"];

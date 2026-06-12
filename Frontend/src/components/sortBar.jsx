@@ -8,7 +8,7 @@ const SORT_OPTIONS = [
 
 const SortBar = ({ onSortChange }) => {
   const [active, setActive] = useState('date');
-  const [direction, setDirection] = useState('asc');
+  const [direction, setDirection] = useState('desc');
 
   const handleClick = (key) => {
     if (active === key) {
@@ -17,8 +17,8 @@ const SortBar = ({ onSortChange }) => {
       onSortChange(key, newDir);
     } else {
       setActive(key);
-      setDirection('asc');
-      onSortChange(key, 'asc');
+      setDirection('desc');
+      onSortChange(key, 'desc');
     }
   };
 
