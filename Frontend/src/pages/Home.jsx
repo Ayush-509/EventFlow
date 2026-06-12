@@ -33,24 +33,25 @@ export default function Home() {
   }, [user]);
 
   async function fetchEvents(overrides = {}) {
-    setLoading(true);
-    setError('');
-    try {
-      const effQ = overrides.q !== undefined ? overrides.q : q;
-      const effCategory = overrides.category !== undefined ? overrides.category : category;
+  setLoading(true);
+  setError('');
+  try {
+    const effQ = overrides.q !== undefined ? overrides.q : q;
+    const effCategory = overrides.category !== undefined ? overrides.category : category;
 
-      const params = {};
-      if (effQ) params.q = effQ;
-      if (effCategory) params.category = effCategory;
+    const params = {};
+    if (effQ) params.q = effQ;
+    if (effCategory) params.category = effCategory;
+    params.status = 'Approved';
 
-      const res = await axios.get('/api/events', { params });
-      setEvents(res.data.events || []);
-    } catch (e) {
-      setError('Failed to load events. Please ensure the backend is running.');
-    } finally {
-      setLoading(false);
-    }
+    const res = await axios.get('/api/events', { params });
+    setEvents(res.data.events || []);
+  } catch (e) {
+    setError('Failed to load events. Please ensure the backend is running.');
+  } finally {
+    setLoading(false);
   }
+}
 
   async function fetchRecs() {
     try {
