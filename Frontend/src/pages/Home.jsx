@@ -86,8 +86,8 @@ export default function Home() {
   };
 
   const filteredEvents = sortEvents(events, sortBy, sortDir).filter((e) => {
-    if (priceFilter === 'free' && (e.price ?? 0) !== 0) return false;
-    if (priceFilter === 'paid' && (e.price ?? 0) === 0) return false;
+    if (priceFilter === 'free' && (e.ticketPrices.General ?? 0) !== 0) return false;
+    if (priceFilter === 'paid' && (e.ticketPrices.General ?? 0) === 0) return false;
     if (statusFilter && getEventStatus(e.date) !== statusFilter) return false;
     return true;
   });
@@ -151,7 +151,7 @@ export default function Home() {
         </div>
 
         <div className="mt-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
-          ₹ {e.price || 0}
+          ₹ {e.ticketPrices.General || 0}
         </div>
 
         <div className="mt-2 text-amber-500 text-sm font-medium">
