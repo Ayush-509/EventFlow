@@ -13,7 +13,8 @@ export default function EventDetails() {
   const [hasReviewed, setHasReviewed] = useState(false);
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
   const [registered, setRegistered] = useState(false);
-
+  const [showTicketModal, setShowTicketModal] = useState(false);
+const [selectedTicketType, setSelectedTicketType] = useState("General");
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -57,8 +58,10 @@ export default function EventDetails() {
   async function registerEvent() {
   try {
     await axios.post(
-      `/api/registrations/${id}/register`,
-      {},
+  `/api/registrations/${id}/register`,
+  {
+    ticketType: selectedTicketType,
+  },
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -136,6 +139,8 @@ END:VCALENDAR`;
 
   if (!event) return <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading event details...</div>;
 
+  
+
   return (
     <div className="space-y-6">
       {/* Toast */}
@@ -184,12 +189,15 @@ END:VCALENDAR`;
             {reviews.length} Review{reviews.length !== 1 ? "s" : ""}
           </div>
           <div className="flex flex-wrap gap-3 mt-3">
-            <button
-              onClick={registerEvent}
-              disabled={registered}
-              className={`px-4 py-2 rounded ${registered ? "bg-green-500 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600" } text-white`}>
-              {registered ? "Registered" : "Register"}
-            </button>
+          <button
+            disabled={registered}
+            onClick={() => setShowTicketModal(true)}
+            className={`px-4 py-2 rounded-lg text-white ${
+              registered
+            ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+            }`}>
+            {registered ? "Registered" : "Register"}
+          </button>
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
@@ -252,6 +260,49 @@ END:VCALENDAR`;
           ))}
         </ul>
       </div>
+      {showTicketModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[400px]">
+
+      <h2 className="text-xl font-bold mb-4">
+        Select Ticket Type
+      </h2>
+
+      <select
+        value={selectedTicketType}
+        onChange={(e) =>
+          setSelectedTicketType(e.target.value)
+        }
+        className="w-full border rounded-lg p-3 mb-4"
+      >
+        <option value="General">General</option>
+        <option value="VIP">VIP</option>
+        <option value="Premium">Premium</option>
+        <option value="Student">Student</option>
+      </select>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => setShowTicketModal(false)}
+          className="flex-1 border rounded-lg p-2"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            await registerEvent();
+            setShowTicketModal(false);
+          }}
+          className="flex-1 bg-indigo-600 text-white rounded-lg p-2"
+        >
+          Confirm
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
