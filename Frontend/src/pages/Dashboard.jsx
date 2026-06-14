@@ -160,60 +160,137 @@ export default function Dashboard() {
       </div>
 
       {/* CUSTOMER */}
-      {user?.role === 'customer' && (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-5 shadow-lg">
-          <h2 className="font-semibold mb-4">My Wallet Passes</h2>
+      {user?.role === "customer" && (
+  <div className="space-y-5">
+    {/* Header */}
+    <div>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+        My Passes
+      </h1>
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        Offline-ready event passes. Open once while online to cache them.
+      </p>
+    </div>
 
-          {mine.length === 0 ? (
-            <div className="text-center text-sm text-slate-500 py-10">
-              No registrations found yet.
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {mine.map((r) => (
-                <div
-                  key={r._id}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white to-slate-100 dark:from-slate-900 dark:to-slate-800 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-gradient-to-r from-indigo-500/10 to-purple-500/10" />
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-5 shadow-lg">
+      {mine.length === 0 ? (
+        <div className="text-center text-sm text-slate-500 py-10">
+          No registrations found yet.
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {mine.map((r) => (
+            <div
+              key={r._id}
+              className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white to-slate-100 dark:from-slate-900 dark:to-slate-800 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-gradient-to-r from-indigo-500/10 to-purple-500/10" />
 
-                  <div className="p-4 space-y-2">
-                    <div className="font-semibold text-lg">{r.event?.title}</div>
-                    <div className="text-xs text-slate-500">
-                      {new Date(r.event?.date).toLocaleString()} • {r.event?.location}
-                    </div>
+              <div className="relative p-5">
+                {/* Top Section */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-semibold text-lg text-slate-800 dark:text-slate-100">
+                      {r.event?.title}
+                    </h2>
 
-                    <div className="flex items-center justify-between mt-3">
-                      {r.qrCodeDataUrl && (
-                        <img
-                          src={r.qrCodeDataUrl}
-                          className="h-14 w-14 rounded-lg border shadow-sm"
-                          alt="QR"
-                        />
-                      )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      {new Date(r.event?.date).toLocaleString()}
+                    </p>
 
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedTicket(r)}
-                          className="px-3 py-1 rounded-lg text-sm bg-slate-900 text-white hover:bg-slate-700 transition"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => downloadTicketDirect(r)}
-                          className="px-3 py-1 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition"
-                        >
-                          Download
-                        </button>
-                      </div>
-                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                      {r.event?.location}
+                    </p>
+                  </div>
+
+                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap">
+                    Active Pass
+                  </span>
+                </div>
+
+                {/* Ticket Details */}
+                <div className="mt-4 text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                  <p>
+                    <strong>Ticket ID:</strong> {r.ticketId}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {r.ticketType}
+                  </p>
+                  <p>
+                    <strong>Price:</strong> ₹{r.price}
+                  </p>
+                </div>
+
+                {/* QR + Actions */}
+                <div className="flex items-center justify-between mt-5">
+                  {r.qrCodeDataUrl ? (
+                    <img
+                      src={r.qrCodeDataUrl}
+                      className="h-16 w-16 rounded-lg border border-slate-200 dark:border-slate-700 bg-white shadow-sm"
+                      alt="QR"
+                    />
+                  ) : (
+                    <div />
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedTicket(r)}
+                      className="px-3 py-2 rounded-lg text-sm bg-slate-900 text-white hover:bg-slate-700 transition"
+                    >
+                      View
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem("token");
+
+                          const response = await axios.get(
+                            `http://localhost:5000/api/tickets/download/${r._id}`,
+                            {
+                              responseType: "blob",
+                              headers: {
+                                Authorization: `Bearer ${token}`,
+                              },
+                            }
+                          );
+
+                          const url = window.URL.createObjectURL(
+                            new Blob([response.data])
+                          );
+
+                          const link = document.createElement("a");
+
+                          link.href = url;
+                          link.download = `${r.ticketId}.pdf`;
+
+                          document.body.appendChild(link);
+
+                          link.click();
+
+                          link.remove();
+                        } catch (error) {
+                          console.log("FULL ERROR:", error);
+                          console.log("MESSAGE:", error.message);
+                          console.log("RESPONSE:", error.response);
+                          console.log("REQUEST:", error.request);
+                        }
+                      }}
+                      className="px-3 py-2 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition"
+                    >
+                      Download PDF
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       )}
+    </div>
+  </div>
+)}
 
       {/* ORGANIZER (unchanged logic, slightly polished container) */}
       {user?.role === 'organizer' && (

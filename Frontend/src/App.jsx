@@ -4,7 +4,6 @@ import EventDetails from './pages/EventDetails.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Dashboard from './pages/Dashboard.jsx';
-import Pass from './pages/Pass.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
 import ChangePassword from './pages/ChangePassword.jsx';
@@ -248,15 +247,6 @@ export default function App() {
             />
 
             <Route
-              path="/pass"
-              element={
-                <PrivateRoute roles={['customer', 'organizer', 'admin']}>
-                  <Pass />
-                </PrivateRoute>
-              }
-            />
-
-            <Route
               path="/dashboard"
               element={
                 <PrivateRoute roles={['customer', 'organizer', 'admin']}>
@@ -264,7 +254,6 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="/passes" element={<Pass />} />
           </Routes>
         </Layout>
       </BrowserRouter>
