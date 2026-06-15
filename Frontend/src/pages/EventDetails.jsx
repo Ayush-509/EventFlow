@@ -56,12 +56,20 @@ const [selectedTicketType, setSelectedTicketType] = useState("General");
   }
 
   async function registerEvent() {
+  if (user?.role !== "customer") {
+    showToast(
+      "warning",
+      "To register for events, please log in as a customer."
+    );
+    return;
+  }
+
   try {
     await axios.post(
-  `/api/registrations/${id}/register`,
-  {
-    ticketType: selectedTicketType,
-  },
+      `/api/registrations/${id}/register`,
+      {
+        ticketType: selectedTicketType,
+      },
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -79,7 +87,7 @@ const [selectedTicketType, setSelectedTicketType] = useState("General");
     showToast(
       "error",
       error.response?.data?.message ||
-        "Registration failed"
+      "Registration failed"
     );
   }
 }
@@ -237,14 +245,29 @@ END:VCALENDAR`;
           </div>
           <div className="flex flex-wrap gap-3 mt-3">
           <button
-            disabled={registered}
-            onClick={() => setShowTicketModal(true)}
-            className={`px-4 py-2 rounded-lg text-white ${
-              registered
-            ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
-            }`}>
-            {registered ? "Registered" : "Register"}
-          </button>
+  disabled={registered || user?.role !== "customer"}
+  onClick={() => {
+    if (user?.role !== "customer") {
+      showToast(
+        "warning",
+        "To register for events, please log in as a customer."
+      );
+      return;
+    }
+
+    setShowTicketModal(true);
+  }}
+  className={`px-4 py-2 rounded-lg text-white ${
+    registered
+      ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+  }`}
+>
+  {registered
+    ? "Registered"
+    : user?.role !== "customer"
+    ? "Customers Only"
+    : "Register"}
+</button>
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
@@ -258,7 +281,7 @@ END:VCALENDAR`;
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
         <h2 className="font-semibold mb-3 text-lg text-slate-800 dark:text-slate-100">Reviews</h2>
 
-        {user && !hasReviewed && (
+        {user?.role === "customer" && !hasReviewed && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <select
               className="input"

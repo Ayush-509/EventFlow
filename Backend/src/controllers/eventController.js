@@ -154,6 +154,12 @@ export const createEvent = async (req, res) => {
       status: "Pending",
     });
 
+    if (req.user.role !== "customer") {
+  return res.status(403).json({
+    message: "Only customers can register for events"
+  });
+}
+
     res.status(201).json({
       success: true,
       event,
