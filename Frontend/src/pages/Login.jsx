@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { GoogleLogin,} from "@react-oauth/google";
 
 export default function Login() {
   const { login } = useAuth();
@@ -89,6 +90,36 @@ export default function Login() {
           >
             Login
           </button>
+          <div className="flex items-center my-4">
+  <div className="flex-1 border-t"></div>
+  <span className="px-3 text-sm text-gray-500">
+    OR
+  </span>
+  <div className="flex-1 border-t"></div>
+</div>
+
+<div className="flex justify-center">
+  <GoogleLogin
+  onSuccess={async (credentialResponse) => {
+    try {
+      const res = await axios.post(
+        "/api/auth/google-login",
+        {
+          credential:
+            credentialResponse.credential,
+        }
+      );
+
+      login(res.data);
+      nav("/");
+    } catch (error) {
+      setError(
+        error.response?.data?.message
+      );
+    }
+  }}
+/>
+</div>
 
           <div className="flex flex-col items-center">
             <p>admin@gmail.com</p>

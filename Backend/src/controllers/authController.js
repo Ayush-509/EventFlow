@@ -2,6 +2,11 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import sendEmail from "../utils/sendEmail.js";
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
 
 // SIGNUP
 
@@ -191,5 +196,113 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Change password failed" });
+  }
+};
+
+//API for Google Login
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential, role } = req.body;
+
+    const ticket =
+      await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+    const payload = ticket.getPayload();
+
+    const {
+      email,
+      name,
+      picture,
+    } = payload;
+
+    const user = await User.findOne({
+  email,
+});
+
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message:
+      "Account not found. Please sign up first.",
+  });
+}
+
+    const token = generateToken(
+      user._id,
+      user.role
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Google login failed",
+    });
+  }
+};
+
+export const googleSignup = async (req, res) => {
+  try {
+    const { credential, role } = req.body;
+
+    const ticket =
+      await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+    const payload = ticket.getPayload();
+
+    const { email, name } = payload;
+
+    const existingUser =
+      await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message:
+          "Account already exists. Please login.",
+      });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password:
+        Math.random().toString(36).slice(-8),
+      role: role || "customer",
+    });
+
+    const token = generateToken(
+      user._id,
+      user.role
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Google signup failed",
+    });
   }
 };
