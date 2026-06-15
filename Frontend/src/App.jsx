@@ -9,6 +9,8 @@ import ResetPassword from './pages/ResetPassword.jsx';
 import ChangePassword from './pages/ChangePassword.jsx';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { useEffect, useState } from 'react';
+import Profile from "./pages/Profile";
+import Navbar from "./components/Navbar";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -55,108 +57,17 @@ function useTheme() {
   return { theme, setTheme };
 }
 
-function Navbar() {
-  const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const location = useLocation();
 
-  return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-blue-100 dark:border-purple-500/20 shadow-sm dark:shadow-purple-900/10">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link
-          to="/"
-          className="flex items-center font-black text-xl tracking-tight hover:scale-105 transition-transform duration-300"
-        >
-          <img
-            className="h-14 object-contain transition-transform duration-300 hover:scale-105"
-            src="/logo.png"
-            alt="EventFlow"
-          />
-        </Link>
 
-        <nav className="flex items-center gap-5 text-sm font-medium">
-          <Link
-            to="/"
-            className={`transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-300 ${
-              location.pathname === '/'
-                ? 'font-semibold text-blue-600 dark:text-purple-300'
-                : ''
-            }`}
-          >
-            Home
-          </Link>
-
-          {user && (
-            <Link
-              to="/dashboard"
-              className={`transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-300 ${
-                location.pathname.startsWith('/dashboard')
-                  ? 'font-semibold text-blue-600 dark:text-purple-300'
-                  : ''
-              }`}
-            >
-              Dashboard
-            </Link>
-          )}
-
-          {user && (
-            <Link
-              to="/change-password"
-              className="transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-300"
-            >
-              Change Password
-            </Link>
-          )}
-
-          {user ? (
-            <button onClick={logout} className="btn-outline">
-              Logout
-            </button>
-          ) : (
-            <>
-              <Link to="/login" className="btn-outline">
-                Login
-              </Link>
-
-              <Link to="/signup" className="btn">
-                Sign up
-              </Link>
-            </>
-          )}
-
-          <button
-            aria-label="Toggle theme"
-            className="input px-3 py-2 text-sm"
-            onClick={() => {
-              const next = theme === 'dark' ? 'light' : 'dark';
-
-              const root = document.documentElement;
-              const body = document.body;
-
-              if (next === 'dark') {
-                root.classList.add('dark');
-                body && body.classList.add('dark');
-              } else {
-                root.classList.remove('dark');
-                body && body.classList.remove('dark');
-              }
-
-              localStorage.setItem('theme', next);
-              setTheme(next);
-            }}
-          >
-            {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
-          </button>
-        </nav>
-      </div>
-    </header>
-  );
-}
 
 function Layout({ children }) {
+  const { theme, setTheme } = useTheme();
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 text-slate-800 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-purple-950 dark:text-slate-100 flex flex-col">
-      <Navbar />
+      <Navbar
+  theme={theme}
+  setTheme={setTheme}
+/>
 
       <section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -224,6 +135,7 @@ export default function App() {
 
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/profile" element={ <PrivateRoute roles={[ "customer", "organizer", "admin", ]} > <Profile /> </PrivateRoute> }/>
 
             <Route
               path="/forgot-password"
