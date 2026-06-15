@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 
 const protect = (req, res, next) => {
+  console.log(
+    "AUTH HEADER:",
+    req.headers.authorization
+  );
+
   try {
     const authHeader = req.headers.authorization;
 
@@ -12,9 +17,15 @@ const protect = (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("TOKEN:", token);
 
-    // attach user info to request
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    console.log("DECODED:", decoded);
+
     req.user = {
       id: decoded.id || decoded._id,
       role: decoded.role,
@@ -22,6 +33,8 @@ const protect = (req, res, next) => {
 
     next();
   } catch (error) {
+    console.log("AUTH ERROR:", error.message);
+
     return res.status(401).json({
       message: "Invalid or expired token",
     });

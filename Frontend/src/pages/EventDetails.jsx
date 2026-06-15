@@ -83,6 +83,53 @@ const [selectedTicketType, setSelectedTicketType] = useState("General");
     );
   }
 }
+const handlePayment = async () => {
+  try {
+    const amount =
+      event.ticketPrices[selectedTicketType];
+
+    const { data } = await axios.post(
+      "/api/payments/create-order",
+      { amount },
+      
+    );
+
+    const options = {
+  key: import.meta.env.VITE_RAZORPAY_KEY,
+
+  amount: data.order.amount,
+
+  currency: "INR",
+
+  name: "EventFlow",
+
+  description: `${selectedTicketType} Ticket`,
+
+  order_id: data.order.id,
+
+  handler: async function () {
+    await registerEvent();
+
+    setRegistered(true);
+
+    setShowTicketModal(false);
+
+    showToast(
+      "success",
+      "Payment successful & registration completed!"
+    );
+  },
+};
+
+    const razorpay =
+      new window.Razorpay(options);
+
+    razorpay.open();
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   function shareEvent() {
     const url = window.location.href;
@@ -290,14 +337,11 @@ END:VCALENDAR`;
         </button>
 
         <button
-          onClick={async () => {
-            await registerEvent();
-            setShowTicketModal(false);
-          }}
-          className="flex-1 bg-indigo-600 text-white rounded-lg p-2"
-        >
-          Confirm
-        </button>
+  onClick={handlePayment}
+  className="flex-1 bg-indigo-600 text-white rounded-lg p-2"
+>
+  Pay & Register
+</button>
       </div>
 
     </div>
