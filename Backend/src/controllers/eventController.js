@@ -134,6 +134,13 @@ export const getEventById = async (req, res) => {
 // Create Event
 export const createEvent = async (req, res) => {
   try {
+
+    if (req.user.role !== "organizer") {
+      return res.status(403).json({
+        message: "Only organizers can create events",
+      });
+    }
+
     const event = await Event.create({
       title: req.body.title,
       category: req.body.category,
@@ -150,20 +157,15 @@ export const createEvent = async (req, res) => {
 
       poster: req.file ? req.file.filename : "",
 
-      organizer: req.user?._id,
+      organizer: req.user.id,
       status: "Pending",
     });
-
-    if (req.user.role !== "customer") {
-  return res.status(403).json({
-    message: "Only customers can register for events"
-  });
-}
 
     res.status(201).json({
       success: true,
       event,
     });
+
   } catch (error) {
     console.log(error);
 
@@ -173,7 +175,6 @@ export const createEvent = async (req, res) => {
     });
   }
 };
-
 export const updateEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);

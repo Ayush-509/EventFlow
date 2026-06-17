@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/", getEvents);
 router.get("/:id", getEventById);
-router.post( "/", upload.single("poster"), createEvent);
+router.post("/", protect, upload.single("poster"), createEvent);
 router.put( "/:id", protect, updateEvent);
 
 router.delete( "/:id", protect, deleteEvent);

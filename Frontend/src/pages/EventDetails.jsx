@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
+import AnnouncementSection from "../components/AnnouncementSection";
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -277,6 +278,12 @@ END:VCALENDAR`;
           </div>
         </div>
       </div>
+      <AnnouncementSection
+  eventId={event._id}
+  isOrganizer={
+    user?.id === event.organizer?._id
+  }
+/>
 
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
         <h2 className="font-semibold mb-3 text-lg text-slate-800 dark:text-slate-100">Reviews</h2>

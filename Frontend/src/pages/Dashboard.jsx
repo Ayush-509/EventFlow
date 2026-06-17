@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [vipPrice, setVipPrice] = useState("");
   const [premiumPrice, setPremiumPrice] = useState("");
   const [studentPrice, setStudentPrice] = useState("");
+  //const [isPublishing, setIsPublishing] = useState(false);
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
