@@ -11,6 +11,8 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { useEffect, useState } from 'react';
 import Profile from "./pages/Profile";
 import Navbar from "./components/Navbar";
+import EditEvent from "./pages/EditEvent";
+import { ToastProvider } from "./context/ToastContext";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -123,19 +125,21 @@ function Layout({ children }) {
     </div>
   );
 }
-
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              {/* all routes */}
+              <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventDetails />} />
 
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/profile" element={ <PrivateRoute roles={[ "customer", "organizer", "admin", ]} > <Profile /> </PrivateRoute> }/>
+            <Route path="/edit-event/:id" element={ <PrivateRoute roles={["organizer"]}> <EditEvent /> </PrivateRoute> }/>
 
             <Route
               path="/forgot-password"
@@ -166,9 +170,10 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

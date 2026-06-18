@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import EventTicket from '../components/EventTicket.jsx';
+import { Link } from "react-router-dom";
 
 
 export default function Dashboard() {
@@ -24,7 +25,9 @@ export default function Dashboard() {
   const [vipPrice, setVipPrice] = useState("");
   const [premiumPrice, setPremiumPrice] = useState("");
   const [studentPrice, setStudentPrice] = useState("");
-  //const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [myEvents, setMyEvents] = useState([]);
+  const [deleteEventId, setDeleteEventId] = useState(null);
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -36,6 +39,7 @@ export default function Dashboard() {
     if (user.role === 'customer') loadMyRegs();
     if (user.role === 'organizer') loadMyEvents();
     if (user.role === 'admin') loadPending();
+    if (user?.role === "organizer") loadMyEvents();
   }, [user]);
 
   async function loadMyRegs() {
@@ -57,6 +61,18 @@ export default function Dashboard() {
     const res = await axios.get(`/api/registrations/${eventId}/participants`);
     setParticipants(res.data.participants || []);
   }
+
+  async function loadMyEvents() {
+  try {
+    const { data } = await axios.get(
+      "/api/events/organizer/my-events"
+    );
+
+    setMyEvents(data.events);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
   async function exportCsv(eventId) {
     try {
@@ -84,18 +100,27 @@ export default function Dashboard() {
   }
 
   async function createEvent(e) {
-    e.preventDefault();
+  e.preventDefault();
+
+  if (isPublishing) return;
+
+  try {
+    setIsPublishing(true);
+
     const fd = new FormData();
+
     fd.append('title', title);
     fd.append('date', date);
-   fd.append('location', location);
-   fd.append('price', price);
-   fd.append('category', category);
+    fd.append('location', location);
+    fd.append('price', price);
+    fd.append('category', category);
     fd.append('description', description);
+
     fd.append("generalPrice", generalPrice);
     fd.append("vipPrice", vipPrice);
     fd.append("premiumPrice", premiumPrice);
     fd.append("studentPrice", studentPrice);
+
     if (poster) fd.append('poster', poster);
 
     await axios.post('/api/events', fd);
@@ -106,11 +131,30 @@ export default function Dashboard() {
     setPrice('');
     setDescription('');
     setPoster(null);
-  
+
+    setGeneralPrice("");
+    setVipPrice("");
+    setPremiumPrice("");
+    setStudentPrice("");
 
     await loadMyEvents();
-    showToast('success', 'Event created successfully');
+
+    showToast(
+      'success',
+      'Event created successfully'
+    );
+
+  } catch (error) {
+    console.log(error);
+
+    showToast(
+      'error',
+      'Failed to create event'
+    );
+  } finally {
+    setIsPublishing(false);
   }
+}
 
   async function approve(id) {
     await axios.post(`/api/admin/events/${id}/approve`);
@@ -293,6 +337,7 @@ export default function Dashboard() {
   </div>
 )}
 
+
       {/* ORGANIZER (unchanged logic, slightly polished container) */}
       {user?.role === 'organizer' && (
         <div className="grid md:grid-cols-2 gap-5">
@@ -354,10 +399,70 @@ export default function Dashboard() {
             
             <textarea className="input w-full mb-2" value={description} onChange={(e)=>setDescription(e.target.value)} />
             <input type="file" onChange={(e)=>setPoster(e.target.files[0])} className="mb-3" />
-            <button className="btn w-full">Publish</button>
+            <button
+             type="submit"
+             disabled={isPublishing}
+             className={`w-full py-3 rounded-xl font-medium transition ${ isPublishing ? "bg-gray-400 cursor-not-allowed text-white" : "bg-blue-600 hover:bg-blue-700 text-white" }`}>
+             {isPublishing ? "Publishing..." : "Publish"}
+            </button>
           </form>
         </div>
       )}
+      {user?.role === "organizer" && (
+  <div className="card mb-8">
+    <h2 className="text-2xl font-bold mb-4">
+      My Events
+    </h2>
+
+    {myEvents.length === 0 ? (
+      <p>No events created yet.</p>
+    ) : (
+      <div className="space-y-4">
+        {myEvents.map((event) => (
+          <div
+            key={event._id}
+            className="flex justify-between items-center border rounded-xl p-4"
+          >
+            <div>
+              <h3 className="font-semibold text-lg">
+                {event.title}
+              </h3>
+
+              <p className="text-sm text-gray-500">
+                {new Date(
+                  event.date
+                ).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+  <Link
+    to={`/events/${event._id}`}
+    className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+  >
+    View Details
+  </Link>
+
+  <Link
+  to={`/edit-event/${event._id}`}
+  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+>
+  ✏️ Edit Event
+</Link>
+
+  <button
+    onClick={() => setDeleteEventId(event._id)}
+    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+  >
+    Delete
+  </button>
+</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
       {/* ADMIN */}
       {user?.role === 'admin' && (
@@ -417,6 +522,55 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {deleteEventId && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md">
+
+      <h2 className="text-xl font-bold mb-3">
+        Delete Event
+      </h2>
+
+      <p className="mb-6">
+        Are you sure you want to delete this event?
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setDeleteEventId(null)}
+          className="border px-4 py-2 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            try {
+              await axios.delete(
+                `/api/events/${deleteEventId}`
+              );
+
+              setDeleteEventId(null);
+
+              loadMyEvents();
+
+              showToast(
+                "success",
+                "Event deleted"
+              );
+            } catch (err) {
+              console.log(err);
+            }
+          }}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg"
+        >
+          Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }

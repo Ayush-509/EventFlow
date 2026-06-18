@@ -175,6 +175,8 @@ export const createEvent = async (req, res) => {
     });
   }
 };
+
+//API to update event 
 export const updateEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -186,6 +188,15 @@ export const updateEvent = async (req, res) => {
       });
     }
 
+    // Only organizer who created the event can edit it
+    if (event.organizer.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this event",
+      });
+    }
+
+    // Basic fields
     event.title = req.body.title || event.title;
     event.description =
       req.body.description || event.description;
@@ -195,22 +206,31 @@ export const updateEvent = async (req, res) => {
       req.body.location || event.location;
     event.date = req.body.date || event.date;
 
-    if (req.body.price !== undefined) {
-      event.price = Number(req.body.price);
-    }
+    // Ticket prices
+    event.ticketPrices = {
+      General:
+        req.body.generalPrice ??
+        event.ticketPrices.General,
 
+      VIP:
+        req.body.vipPrice ??
+        event.ticketPrices.VIP,
+
+      Premium:
+        req.body.premiumPrice ??
+        event.ticketPrices.Premium,
+
+      Student:
+        req.body.studentPrice ??
+        event.ticketPrices.Student,
+    };
+
+    // Poster update
     if (req.file) {
       event.poster = req.file.filename;
     }
 
-    await event.save();
-
-    const updatedEvent = {
-      ...event.toObject(),
-      posterUrl: event.poster
-        ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
-        : "",
-    };
+    const updatedEvent = await event.save();
 
     res.status(200).json({
       success: true,
@@ -218,7 +238,7 @@ export const updateEvent = async (req, res) => {
       event: updatedEvent,
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
 
     res.status(500).json({
       success: false,
@@ -247,6 +267,25 @@ export const deleteEvent = async (req, res) => {
   } catch (error) {
     console.error(error);
 
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//API to show events to its organizer
+export const getMyEvents = async (req, res) => {
+  try {
+    const events = await Event.find({
+      organizer: req.user.id,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      events,
+    });
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: error.message,
