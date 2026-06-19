@@ -21,6 +21,11 @@ export default function EditEvent() {
   const [premiumPrice, setPremiumPrice] = useState("");
   const [studentPrice, setStudentPrice] = useState("");
 
+  const [generalLimit, setGeneralLimit] = useState(0);
+  const [vipLimit, setVipLimit] = useState(0);
+  const [premiumLimit, setPremiumLimit] = useState(0);
+  const [studentLimit, setStudentLimit] = useState(0);
+
   const [poster, setPoster] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -44,6 +49,11 @@ export default function EditEvent() {
       setDescription(e.description || "");
       setCategory(e.category || "");
       setLocation(e.location || "");
+
+      setGeneralLimit(e.ticketLimits?.General || 0);
+      setVipLimit(e.ticketLimits?.VIP || 0);
+      setPremiumLimit(e.ticketLimits?.Premium || 0);
+      setStudentLimit(e.ticketLimits?.Student || 0);
 
       setDate(
         e.date
@@ -95,6 +105,11 @@ export default function EditEvent() {
       fd.append("vipPrice", vipPrice);
       fd.append("premiumPrice", premiumPrice);
       fd.append("studentPrice", studentPrice);
+
+      fd.append("generalLimit", generalLimit);
+      fd.append("vipLimit", vipLimit);
+      fd.append("premiumLimit", premiumLimit);
+      fd.append("studentLimit", studentLimit);
 
       if (poster) {
         fd.append("poster", poster);
@@ -330,6 +345,75 @@ return;
         type="number"
         value={studentPrice}
         onChange={(e) => setStudentPrice(e.target.value)}
+        className="input w-full"
+      />
+    </div>
+
+  </div>
+</div>
+<div>
+  <h3 className="font-semibold text-lg mb-4">
+    🎟 Ticket Availability
+  </h3>
+
+  <div className="space-y-4">
+
+    <div>
+      <label className="block font-medium mb-1">
+        🎫 General Tickets Available
+      </label>
+
+      <input
+        type="number"
+        value={generalLimit}
+        onChange={(e) =>
+          setGeneralLimit(e.target.value)
+        }
+        className="input w-full"
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium mb-1">
+        ⭐ VIP Tickets Available
+      </label>
+
+      <input
+        type="number"
+        value={vipLimit}
+        onChange={(e) =>
+          setVipLimit(e.target.value)
+        }
+        className="input w-full"
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium mb-1">
+        👑 Premium Tickets Available
+      </label>
+
+      <input
+        type="number"
+        value={premiumLimit}
+        onChange={(e) =>
+          setPremiumLimit(e.target.value)
+        }
+        className="input w-full"
+      />
+    </div>
+
+    <div>
+      <label className="block font-medium mb-1">
+        🎓 Student Tickets Available
+      </label>
+
+      <input
+        type="number"
+        value={studentLimit}
+        onChange={(e) =>
+          setStudentLimit(e.target.value)
+        }
         className="input w-full"
       />
     </div>

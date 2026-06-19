@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import EventDetails from './pages/EventDetails.jsx';
-import Login from './pages/Login.jsx';
-import Signup from './pages/Signup.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';

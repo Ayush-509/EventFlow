@@ -8,7 +8,48 @@ const eventSchema = new mongoose.Schema(
     location: String,
     date: Date,
 
+    // Ticket Prices
     ticketPrices: {
+      General: {
+        type: Number,
+        default: 0,
+      },
+      VIP: {
+        type: Number,
+        default: 0,
+      },
+      Premium: {
+        type: Number,
+        default: 0,
+      },
+      Student: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    // Ticket Limits
+    ticketLimits: {
+      General: {
+        type: Number,
+        default: 0,
+      },
+      VIP: {
+        type: Number,
+        default: 0,
+      },
+      Premium: {
+        type: Number,
+        default: 0,
+      },
+      Student: {
+        type: Number,
+        default: 0,
+      },
+    },
+
+    // Sold Tickets Counter
+    ticketsSold: {
       General: {
         type: Number,
         default: 0,

@@ -193,6 +193,21 @@ END:VCALENDAR`;
     }
   }
 
+  const totalTickets =
+  event?.ticketLimits?.[selectedTicketType] || 0;
+
+const soldTickets =
+  event?.ticketsSold?.[selectedTicketType] || 0;
+
+const remainingTickets =
+  totalTickets - soldTickets;
+
+const ticketPrice =
+  event?.ticketPrices?.[selectedTicketType] || 0;
+
+const soldOut =
+  totalTickets > 0 &&
+  remainingTickets <= 0;
   if (!event) return <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading event details...</div>;
 
   
@@ -346,17 +361,46 @@ END:VCALENDAR`;
       </h2>
 
       <select
-        value={selectedTicketType}
-        onChange={(e) =>
-          setSelectedTicketType(e.target.value)
-        }
-        className="w-full border rounded-lg p-3 mb-4"
-      >
-        <option value="General">General</option>
-        <option value="VIP">VIP</option>
-        <option value="Premium">Premium</option>
-        <option value="Student">Student</option>
-      </select>
+  value={selectedTicketType}
+  onChange={(e) =>
+    setSelectedTicketType(e.target.value)
+  }
+  className="w-full border rounded-lg p-3 mb-4"
+>
+  <option value="General">
+    General
+  </option>
+
+  <option value="VIP">
+    VIP
+  </option>
+
+  <option value="Premium">
+    Premium
+  </option>
+
+  <option value="Student">
+    Student
+  </option>
+</select>
+
+<div className="bg-slate-50 rounded-xl p-4 mb-4 space-y-2">
+
+  <p className="text-lg font-semibold text-green-600">
+    Price: ₹{ticketPrice}
+  </p>
+
+  {soldOut ? (
+    <p className="font-semibold text-red-600">
+      Sold Out
+    </p>
+  ) : (
+    <p className="font-medium text-blue-600">
+      Available: {remainingTickets} / {totalTickets}
+    </p>
+  )}
+
+</div>
 
       <div className="flex gap-3">
         <button
@@ -368,9 +412,16 @@ END:VCALENDAR`;
 
         <button
   onClick={handlePayment}
-  className="flex-1 bg-indigo-600 text-white rounded-lg p-2"
+  disabled={soldOut}
+  className={`flex-1 rounded-lg p-2 text-white ${
+    soldOut
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-indigo-600 hover:bg-indigo-700"
+  }`}
 >
-  Pay & Register
+  {soldOut
+    ? "Sold Out"
+    : "Pay & Register"}
 </button>
       </div>
 

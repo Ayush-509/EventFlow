@@ -1,5 +1,6 @@
 import Event from "../models/event.js";
 import Review from "../models/review.js";
+import Registration from "../models/registration.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -119,6 +120,38 @@ export const getEventById = async (req, res) => {
       ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
       : "";
 
+    const registrations = await Registration.find({
+  event: event._id,
+});
+
+const remainingTickets = {
+  General:
+    (event.ticketLimits?.General || 0) -
+    registrations.filter(
+      (r) => r.ticketType === "General"
+    ).length,
+
+  VIP:
+    (event.ticketLimits?.VIP || 0) -
+    registrations.filter(
+      (r) => r.ticketType === "VIP"
+    ).length,
+
+  Premium:
+    (event.ticketLimits?.Premium || 0) -
+    registrations.filter(
+      (r) => r.ticketType === "Premium"
+    ).length,
+
+  Student:
+    (event.ticketLimits?.Student || 0) -
+    registrations.filter(
+      (r) => r.ticketType === "Student"
+    ).length,
+};
+
+eventObj.remainingTickets = remainingTickets;
+
     res.status(200).json({
       success: true,
       event: eventObj,
@@ -224,6 +257,13 @@ export const updateEvent = async (req, res) => {
         req.body.studentPrice ??
         event.ticketPrices.Student,
     };
+// Ticket limits
+event.ticketLimits = {
+  General: Number(req.body.generalLimit) || 0,
+  VIP: Number(req.body.vipLimit) || 0,
+  Premium: Number(req.body.premiumLimit) || 0,
+  Student: Number(req.body.studentLimit) || 0,
+};
 
     // Poster update
     if (req.file) {

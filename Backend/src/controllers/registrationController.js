@@ -31,6 +31,22 @@ export const registerEvent = async (req, res) => {
         message: "Event not found",
       });
     }
+    const ticketLimit =
+  event.ticketLimits?.[ticketType] || 0;
+
+const ticketsSold =
+  event.ticketsSold?.[ticketType] || 0;
+
+// If limit exists and all tickets sold
+if (
+  ticketLimit > 0 &&
+  ticketsSold >= ticketLimit
+) {
+  return res.status(400).json({
+    success: false,
+    message: `${ticketType} tickets are sold out`,
+  });
+}
 
     const alreadyRegistered =
       await Registration.findOne({
@@ -87,6 +103,10 @@ export const registerEvent = async (req, res) => {
         barcodeDataUrl,
         status: "registered",
       });
+
+      event.ticketsSold[ticketType] += 1;
+
+     await event.save();
 
     res.status(201).json({
       success: true,
