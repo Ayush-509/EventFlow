@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import Navbar from "./components/Navbar";
 import EditEvent from "./pages/EditEvent";
 import { ToastProvider } from "./context/ToastContext";
+import Auth from "./pages/Auth";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -136,8 +137,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventDetails />} />
 
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={ <PrivateRoute roles={[ "customer", "organizer", "admin", ]} > <Profile /> </PrivateRoute> }/>
             <Route path="/edit-event/:id" element={ <PrivateRoute roles={["organizer"]}> <EditEvent /> </PrivateRoute> }/>
 

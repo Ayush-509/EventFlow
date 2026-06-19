@@ -8,6 +8,7 @@ export default function Navbar({ theme, setTheme }) {
   const location = useLocation();
 
   const [profilePhoto, setProfilePhoto] = useState("");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -37,6 +38,8 @@ export default function Navbar({ theme, setTheme }) {
   return (
     <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-blue-100 dark:border-purple-500/20 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        
+        {/* Logo */}
         <Link to="/">
           <img
             className="h-14 object-contain"
@@ -45,6 +48,7 @@ export default function Navbar({ theme, setTheme }) {
           />
         </Link>
 
+        {/* Navigation */}
         <nav className="flex items-center gap-5 text-sm font-medium">
           <Link
             to="/"
@@ -57,47 +61,75 @@ export default function Navbar({ theme, setTheme }) {
             Home
           </Link>
 
-          {user && (
-            <Link to="/dashboard">
-              Dashboard
+          {/* User Not Logged In */}
+          {!user ? (
+            <Link to="/auth" className="btn">
+              Sign In
             </Link>
-          )}
-
-          {user && (
-            <Link to="/change-password">
-              Change Password
-            </Link>
-          )}
-
-          {user && (
-            <Link to="/profile">
-              <img
-                src={
-                  profilePhoto ||
-                  `https://ui-avatars.com/api/?name=${user.name}`
-                }
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
-              />
-            </Link>
-          )}
-
-          {user ? (
-            <button onClick={logout} className="btn-outline">
-              Logout
-            </button>
           ) : (
-            <>
-              <Link to="/login" className="btn-outline">
-                Login
-              </Link>
+            <div className="relative">
+              <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-2"
+              >
+                <img
+                  src={
+                    profilePhoto ||
+                    `https://ui-avatars.com/api/?name=${user.name}`
+                  }
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+                />
 
-              <Link to="/signup" className="btn">
-                Sign up
-              </Link>
-            </>
+                <span className="hidden md:block">
+                  {user.name}
+                </span>
+
+                <span>▼</span>
+              </button>
+
+              {open && (
+                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  
+                  <Link
+                    to="/profile"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                  >
+                    My Profile
+                  </Link>
+
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                  >
+                    Dashboard
+                  </Link>
+
+                  <Link
+                    to="/change-password"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                  >
+                    Change Password
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      logout();
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
+          {/* Theme Toggle */}
           <button
             className="input px-3 py-2 text-sm"
             onClick={() => {
