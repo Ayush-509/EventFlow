@@ -35,19 +35,42 @@ export default function Home() {
   async function fetchEvents(overrides = {}) {
   setLoading(true);
   setError('');
+
   try {
-    const effQ = overrides.q !== undefined ? overrides.q : q;
-    const effCategory = overrides.category !== undefined ? overrides.category : category;
+    const effQ =
+      overrides.q !== undefined
+        ? overrides.q
+        : q;
 
-    const params = {};
-    if (effQ) params.q = effQ;
-    if (effCategory) params.category = effCategory;
-    params.status = 'Approved';
+    const effCategory =
+      overrides.category !== undefined
+        ? overrides.category
+        : category;
 
-    const res = await axios.get('/api/events', { params });
+    const params = {
+      status: 'Approved',
+    };
+
+    if (effQ?.trim()) {
+      params.search = effQ.trim();
+    }
+
+    if (effCategory) {
+      params.category = effCategory;
+    }
+
+    const res = await axios.get(
+      '/api/events',
+      { params }
+    );
+
     setEvents(res.data.events || []);
-  } catch (e) {
-    setError('Failed to load events. Please ensure the backend is running.');
+  } catch (error) {
+    console.error(error);
+
+    setError(
+      'Failed to load events. Please ensure the backend is running.'
+    );
   } finally {
     setLoading(false);
   }

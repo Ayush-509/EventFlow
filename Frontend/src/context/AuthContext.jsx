@@ -23,11 +23,12 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  setToken(null);
+  setUser(null);
+  window.location.href = '/auth';
+};
 
   const value = useMemo(() => ({ token, user, login, logout }), [token, user]);
 

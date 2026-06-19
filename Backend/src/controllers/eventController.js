@@ -9,22 +9,41 @@ export const getEvents = async (req, res) => {
     let query = {};
 
     // Search by title or description
-    if (search) {
-      query.$or = [
-        {
-          title: {
-            $regex: search,
-            $options: "i",
-          },
+    if (search?.trim()) {
+  const keywords = search
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  query.$and = keywords.map((word) => ({
+    $or: [
+      {
+        title: {
+          $regex: word,
+          $options: "i",
         },
-        {
-          description: {
-            $regex: search,
-            $options: "i",
-          },
+      },
+      {
+        description: {
+          $regex: word,
+          $options: "i",
         },
-      ];
-    }
+      },
+      {
+        location: {
+          $regex: word,
+          $options: "i",
+        },
+      },
+      {
+        category: {
+          $regex: word,
+          $options: "i",
+        },
+      },
+    ],
+  }));
+}
 
     // Category filter
     if (category) {

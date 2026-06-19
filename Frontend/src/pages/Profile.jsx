@@ -96,80 +96,140 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-8">
+  <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl overflow-hidden">
 
-      <div className="flex flex-col items-center mb-8">
+      {/* Header */}
+      <div className="h-32 bg-slate-200 dark:bg-slate-800" />
 
-        <img
-          src={
-            user.profilePhoto ||
-            `https://ui-avatars.com/api/?name=${user.name}`
-          }
-          alt=""
-          className="w-32 h-32 rounded-full object-cover border"
-        />
+      {/* Profile Section */}
+      <div className="px-8 pb-8">
+        <div className="flex flex-col items-center -mt-16">
+          <img
+            src={
+              user.profilePhoto ||
+              `https://ui-avatars.com/api/?name=${user.name}`
+            }
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-900 shadow-lg"
+          />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoUpload}
-          className="mt-4"
-        />
+          <h2 className="mt-4 text-2xl font-bold text-slate-800 dark:text-slate-100">
+            {user.name || "User"}
+          </h2>
 
-      </div>
+          <p className="text-slate-500 dark:text-slate-400">
+            {user.role}
+          </p>
 
-      <form
-        onSubmit={handleUpdate}
-        className="space-y-4"
-      >
-        <input
-          type="text"
-          name="name"
-          value={user.name}
-          onChange={handleChange}
-          placeholder="Name"
-          className="w-full border p-3 rounded"
-        />
+          <label className="mt-4 cursor-pointer">
+            <span className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition">
+              Change Photo
+            </span>
 
-        <input
-          type="email"
-          value={user.email}
-          disabled
-          className="w-full border p-3 rounded bg-gray-100"
-        />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+          </label>
+        </div>
 
-        <input
-          type="text"
-          name="phone"
-          value={user.phone}
-          onChange={handleChange}
-          placeholder="Phone"
-          className="w-full border p-3 rounded"
-        />
-
-        <textarea
-          name="bio"
-          value={user.bio}
-          onChange={handleChange}
-          placeholder="Bio"
-          className="w-full border p-3 rounded"
-        />
-
-        <textarea
-          name="address"
-          value={user.address}
-          onChange={handleChange}
-          placeholder="Address"
-          className="w-full border p-3 rounded"
-        />
-
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-6 py-3 rounded-lg"
+        {/* Form */}
+        <form
+          onSubmit={handleUpdate}
+          className="mt-8 grid md:grid-cols-2 gap-5"
         >
-          Save Changes
-        </button>
-      </form>
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={user.name}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={user.email}
+              disabled
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Phone Number
+            </label>
+            <input
+              type="text"
+              name="phone"
+              value={user.phone}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Role
+            </label>
+            <input
+              type="text"
+              value={user.role}
+              disabled
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3 cursor-not-allowed capitalize"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Bio
+            </label>
+            <textarea
+              name="bio"
+              value={user.bio}
+              onChange={handleChange}
+              rows="4"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Tell us something about yourself..."
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Address
+            </label>
+            <textarea
+              name="address"
+              value={user.address}
+              onChange={handleChange}
+              rows="3"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Enter your address"
+            />
+          </div>
+
+          <div className="md:col-span-2 flex justify-end">
+            <button
+              type="submit"
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  );
+  </div>
+);
 }
