@@ -333,6 +333,56 @@ export const deleteEvent = async (req, res) => {
   }
 };
 
+export const getOrganizerEvents = async (req, res) => {
+  try {
+    const { organizerId, eventId } = req.params;
+
+    const events = await Event.find({
+      organizer: organizerId,
+      _id: { $ne: eventId },
+      status: "Approved",
+    })
+      .populate("organizer", "name email")
+      .sort({ createdAt: -1 });
+
+    const eventsWithPoster = await Promise.all(
+      events.map(async (event) => {
+        const reviews = await Review.find({
+          event: event._id,
+        });
+
+        const averageRating =
+          reviews.length > 0
+            ? reviews.reduce(
+                (sum, review) => sum + review.rating,
+                0
+              ) / reviews.length
+            : 0;
+
+        return {
+          ...event.toObject(),
+          averageRating,
+          posterUrl: event.poster
+            ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+            : "",
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      events: eventsWithPoster,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 //API to show events to its organizer
 export const getMyEvents = async (req, res) => {
   try {

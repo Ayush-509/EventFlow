@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementSection from "../components/AnnouncementSection";
 
 export default function EventDetails() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
   const [event, setEvent] = useState(null);
@@ -15,7 +16,8 @@ export default function EventDetails() {
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
   const [registered, setRegistered] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
-const [selectedTicketType, setSelectedTicketType] = useState("General");
+  const [selectedTicketType, setSelectedTicketType] = useState("General");
+  const [otherEvents, setOtherEvents] = useState([]);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -32,6 +34,15 @@ const [selectedTicketType, setSelectedTicketType] = useState("General");
         axios.get(`/api/reviews/${id}`),
       ]);
       setEvent(e.data.event);
+      const organizerId = e.data.event.organizer?._id;
+
+if (organizerId) {
+  const otherRes = await axios.get(
+    `/api/events/organizer/${organizerId}/${id}`
+  );
+
+  setOtherEvents(otherRes.data.events || []);
+}
       setReviews(r.data.reviews || []);
 
       if (user) {
@@ -352,6 +363,66 @@ const soldOut =
           ))}
         </ul>
       </div>
+
+      {otherEvents.length > 0 && (
+  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+    <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100">
+      Our Other Events
+    </h2>
+
+    <div className="flex gap-4 overflow-x-auto pb-2">
+      {otherEvents.map((ev) => (
+        <div
+  key={ev._id}
+  onClick={() => navigate(`/events/${ev._id}`)}
+  className="group min-w-[280px] cursor-pointer rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+>
+  <div className="relative">
+    <img
+      src={ev.posterUrl || "/placeholder.svg"}
+      alt={ev.title}
+      className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
+      onError={(e) => {
+        e.currentTarget.onerror = null;
+        e.currentTarget.src = "/placeholder.svg";
+      }}
+      loading="lazy"
+    />
+
+    <div className="absolute top-3 left-3 flex items-center gap-2">
+      <span className="text-xs px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700">
+        {ev.category}
+      </span>
+    </div>
+  </div>
+
+  <div className="p-4">
+    <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-purple-300 transition-colors">
+      {ev.title}
+    </h3>
+
+    <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mt-1">
+      {ev.description}
+    </p>
+
+    <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+      {new Date(ev.date).toLocaleString()} • {ev.location}
+    </div>
+
+    <div className="mt-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
+      ₹ {ev.ticketPrices?.General || 0}
+    </div>
+
+    <div className="mt-2 text-amber-500 text-sm font-medium">
+      ⭐ {ev.averageRating?.toFixed?.(1) || "0.0"} / 5
+    </div>
+  </div>
+</div>
+      ))}
+    </div>
+  </div>
+)}
+
       {showTicketModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[400px]">
@@ -429,5 +500,7 @@ const soldOut =
   </div>
 )}
     </div>
+
+    
   );
 }
