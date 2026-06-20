@@ -117,6 +117,25 @@ export default function Navbar({ theme, setTheme }) {
                     </Link>
                   )}
 
+                  {user?.role === "admin" && (
+                    <div>
+                      <Link
+                        to="/admin/customers"
+                        onClick={() => setOpen(false)}
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                      >
+                        Manage Customers
+                      </Link>
+                      <Link
+                        to="/admin/organizers"
+                        onClick={() => setOpen(false)}
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                      >
+                        Manage Organizers
+                      </Link>
+                    </div>
+                  )}
+
                   <Link
                     to="/change-password"
                     onClick={() => setOpen(false)}
