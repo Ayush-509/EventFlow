@@ -12,6 +12,8 @@ import Navbar from "./components/Navbar";
 import EditEvent from "./pages/EditEvent";
 import { ToastProvider } from "./context/ToastContext";
 import Auth from "./pages/Auth";
+import AdminCustomers from "./pages/AdminCustomers";
+import AdminOrganizers from "./pages/AdminOrganizers";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -168,6 +170,8 @@ export default function App() {
                 </PrivateRoute>
               }
             />
+              <Route path="/admin/customers" element={<AdminCustomers />}/>
+              <Route path="/admin/organizers" element={<AdminOrganizers />}/>
             </Routes>
           </Layout>
         </BrowserRouter>

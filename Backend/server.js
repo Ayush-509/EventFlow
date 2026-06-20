@@ -11,6 +11,7 @@ import ticketRoutes from "./src/routes/ticketRoutes.js";
 import paymentRoutes from "./src/routes/paymentRoutes.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 import announcementRoutes from "./src/routes/announcementRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
 
 
 import path from "path";
@@ -49,6 +50,7 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT =
   process.env.PORT || 5000;

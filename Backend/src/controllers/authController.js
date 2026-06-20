@@ -58,6 +58,13 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked by admin",
+      });
+    }
+
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {

@@ -465,20 +465,65 @@ export default function Dashboard() {
 )}
 
       {/* ADMIN */}
-      {user?.role === 'admin' && (
-        <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
-          <h2 className="font-semibold mb-3">Pending Events</h2>
-          {Pending.map((e) => (
-            <div key={e._id} className="flex justify-between items-center p-2 border rounded-lg mb-2">
-              <span>{e.title}</span>
-              <div className="flex gap-2">
-                <button onClick={() => approve(e._id)} className="btn">Approve</button>
-                <button onClick={() => reject(e._id)} className="btn-outline">Reject</button>
-              </div>
-            </div>
-          ))}
+      {/* ADMIN */}
+{user?.role === "admin" && (
+  <div className="space-y-4">
+
+    {/* Admin Navigation */}
+    <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
+      <h2 className="font-semibold mb-3">Admin Management</h2>
+
+      <div className="flex gap-3">
+        <Link
+          to="/admin/customers"
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+        >
+          Customers
+        </Link>
+
+        <Link
+          to="/admin/organizers"
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+        >
+          Organizers
+        </Link>
+      </div>
+    </div>
+
+    {/* Pending Events */}
+    <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
+      <h2 className="font-semibold mb-3">
+        Pending Events
+      </h2>
+
+      {Pending.map((e) => (
+        <div
+          key={e._id}
+          className="flex justify-between items-center p-2 border rounded-lg mb-2"
+        >
+          <span>{e.title}</span>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => approve(e._id)}
+              className="btn"
+            >
+              Approve
+            </button>
+
+            <button
+              onClick={() => reject(e._id)}
+              className="btn-outline"
+            >
+              Reject
+            </button>
+          </div>
         </div>
-      )}
+      ))}
+    </div>
+
+  </div>
+)}
 
       {/* 🔥 PREMIUM WALLET MODAL */}
       {selectedTicket && (

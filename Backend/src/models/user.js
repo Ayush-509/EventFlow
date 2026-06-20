@@ -58,6 +58,11 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpire: {
       type: Date,
     },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -78,5 +83,8 @@ userSchema.pre("save", async function () {
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
+const User =
+  mongoose.models.User ||
+  mongoose.model("User", userSchema);
 
-export default mongoose.model("User", userSchema);
+export default User;
