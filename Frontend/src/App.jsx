@@ -14,6 +14,8 @@ import { ToastProvider } from "./context/ToastContext";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
 import "leaflet/dist/leaflet.css";
+import AdminCustomers from "./pages/AdminCustomers";
+import AdminOrganizers from "./pages/AdminOrganizers";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -175,6 +177,8 @@ export default function App() {
               path="/favorites"
               element={<Favorites />}
             />
+              <Route path="/admin/customers" element={<AdminCustomers />}/>
+              <Route path="/admin/organizers" element={<AdminOrganizers />}/>
             </Routes>
           </Layout>
         </BrowserRouter>
