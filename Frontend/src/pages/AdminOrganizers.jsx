@@ -69,9 +69,17 @@ export default function AdminOrganizers() {
                 </td>
 
                 <td className="p-3">
-                  {organizer.isBlocked
-                    ? "Blocked"
-                    : "Active"}
+                  <span
+                    className={`px-2 py-1 rounded text-sm ${
+                      organizer.isBlocked
+                        ? "bg-red-100 text-red-600"
+                        : "bg-green-100 text-green-600"
+                    }`}
+                  >
+                    {organizer.isBlocked
+                      ? "Blocked"
+                      : "Active"}
+                  </span>
                 </td>
 
                 <td className="p-3">
