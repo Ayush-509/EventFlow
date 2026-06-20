@@ -199,6 +199,8 @@ export const createEvent = async (req, res) => {
       description: req.body.description,
       date: req.body.date,
       location: req.body.location,
+      latitude: Number(req.body.latitude),
+longitude: Number(req.body.longitude),
 
       ticketPrices: {
         General: Number(req.body.generalPrice || 0),

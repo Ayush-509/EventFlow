@@ -107,6 +107,16 @@ export default function Navbar({ theme, setTheme }) {
                     Dashboard
                   </Link>
 
+                  {user?.role === "customer" && (
+                    <Link
+                      to="/favorites"
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    >
+                      My Favorites
+                    </Link>
+                  )}
+
                   <Link
                     to="/change-password"
                     onClick={() => setOpen(false)}

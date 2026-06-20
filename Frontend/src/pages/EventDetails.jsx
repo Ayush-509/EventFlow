@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementSection from "../components/AnnouncementSection";
+import EventLocationMap from "../components/EventLocationMap.jsx";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function EventDetails() {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [selectedTicketType, setSelectedTicketType] = useState("General");
   const [otherEvents, setOtherEvents] = useState([]);
+  const [showMap, setShowMap] = useState(false);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -151,6 +153,14 @@ const handlePayment = async () => {
   }
 };
 
+function getDirections() {
+  if (!event?.latitude || !event?.longitude) return;
+
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${event.latitude},${event.longitude}`;
+
+  window.open(url, "_blank");
+}
+
   function shareEvent() {
     const url = window.location.href;
     if (navigator.share) {
@@ -161,30 +171,7 @@ const handlePayment = async () => {
     }
   }
 
-  function downloadIcs() {
-    const start = new Date(event.date);
-    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
-    const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//CampusEvents//EN
-BEGIN:VEVENT
-UID:${event._id}@campus
-DTSTAMP:${start.toISOString().replace(/[-:]/g,'').split('.')[0]}Z
-DTSTART:${start.toISOString().replace(/[-:]/g,'').split('.')[0]}Z
-DTEND:${end.toISOString().replace(/[-:]/g,'').split('.')[0]}Z
-SUMMARY:${event.title}
-DESCRIPTION:${event.description}
-LOCATION:${event.location}
-END:VEVENT
-END:VCALENDAR`;
-    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${event.title}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  
 
   async function submitReview() {
     if (!comment.trim()) return;
@@ -263,6 +250,50 @@ const soldOut =
           <div className="text-sm text-slate-500 dark:text-slate-400">
             {new Date(event.date).toLocaleString()} • {event.location}
           </div>
+          <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+
+  {/* Toggle Button */}
+  <button
+    onClick={() => setShowMap(!showMap)}
+    className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+  >
+    <span className="font-semibold text-slate-700 dark:text-slate-200">
+      📍 Location Map
+    </span>
+
+    <span className="text-slate-500">
+      {showMap ? "▲" : "▼"}
+    </span>
+  </button>
+
+  {/* Collapsible Map */}
+  <div
+    className={`transition-all duration-500 ease-in-out overflow-hidden ${
+      showMap ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+    }`}
+  >
+    <div className="p-3 bg-white dark:bg-slate-900">
+      <div className="space-y-3">
+
+  {/* Map */}
+  <EventLocationMap
+    latitude={event.latitude}
+    longitude={event.longitude}
+  />
+
+  {/* Directions Button */}
+  <button
+    onClick={getDirections}
+    className="w-full mt-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
+  >
+    📍 Get Directions
+  </button>
+
+</div>
+    </div>
+  </div>
+
+</div>
           <div className="text-amber-500 font-medium">
          ⭐ {event.averageRating?.toFixed?.(1) || "0.0"} / 5
           </div>
@@ -298,8 +329,8 @@ const soldOut =
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
-            <button className="btn-outline" onClick={downloadIcs}>
-              Add to Calendar
+            <button className="btn-outline">
+              Yha koi naya feature add kro
             </button>
           </div>
         </div>

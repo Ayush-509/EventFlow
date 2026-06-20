@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './index.css';
 import axios from 'axios';
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import "leaflet/dist/leaflet.css";
 
 // Axios base config
 axios.defaults.baseURL = '';

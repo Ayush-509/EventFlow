@@ -5,7 +5,20 @@ const eventSchema = new mongoose.Schema(
     title: String,
     description: String,
     category: String,
-    location: String,
+    location: {
+  type: String,
+  required: true,
+},
+
+latitude: {
+  type: Number,
+  default: null,
+},
+
+longitude: {
+  type: Number,
+  default: null,
+},
     date: Date,
 
     // Ticket Prices

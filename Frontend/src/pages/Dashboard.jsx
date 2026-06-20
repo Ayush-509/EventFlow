@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import EventTicket from '../components/EventTicket.jsx';
 import { Link } from "react-router-dom";
-
+import EventLocationPicker from "../components/EventLocationPicker.jsx";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -13,6 +13,8 @@ export default function Dashboard() {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState(null);
+const [longitude, setLongitude] = useState(null);
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Tech');
   const [description, setDescription] = useState('');
@@ -112,6 +114,8 @@ export default function Dashboard() {
     fd.append('title', title);
     fd.append('date', date);
     fd.append('location', location);
+    fd.append("latitude", latitude);
+fd.append("longitude", longitude);
     fd.append('price', price);
     fd.append('category', category);
     fd.append('description', description);
@@ -128,6 +132,8 @@ export default function Dashboard() {
     setTitle('');
     setDate('');
     setLocation('');
+    setLatitude(null);
+setLongitude(null);
     setPrice('');
     setDescription('');
     setPoster(null);
@@ -347,6 +353,29 @@ export default function Dashboard() {
             <input className="input w-full mb-2" placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
             <input className="input w-full mb-2" type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} />
             <input className="input w-full mb-2" placeholder="Location" value={location} onChange={(e)=>setLocation(e.target.value)} />
+            <div className="mb-4">
+  <p className="font-medium mb-2">
+    Select Event Location
+  </p>
+
+  <EventLocationPicker
+    onLocationSelect={(lat, lng) => {
+      setLatitude(lat);
+      setLongitude(lng);
+    }}
+  />
+
+  {latitude && longitude && (
+    <p className="text-sm mt-2 text-green-600">
+      Selected:
+      {" "}
+      {latitude.toFixed(6)}
+      ,
+      {" "}
+      {longitude.toFixed(6)}
+    </p>
+  )}
+</div>
             <input
   className="input w-full mb-2"
   type="number"

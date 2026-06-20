@@ -11,6 +11,7 @@ import ticketRoutes from "./src/routes/ticketRoutes.js";
 import paymentRoutes from "./src/routes/paymentRoutes.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 import announcementRoutes from "./src/routes/announcementRoutes.js";
+import favoriteRoutes from "./src/routes/favoriteRoutes.js";
 
 
 import path from "path";
@@ -38,6 +39,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/favorites", favoriteRoutes);
 app.use(
   "/uploads",
   express.static(path.join(process.cwd(), "uploads"))

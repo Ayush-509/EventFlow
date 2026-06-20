@@ -18,6 +18,7 @@ export default function Home() {
   const [sortDir, setSortDir] = useState('desc');
   const [priceFilter, setPriceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [favorites, setFavorites] = useState([]);
   const categories = ["All","Tech","Startup","Entertainment","Hackathon","Music","Sports","Education","Business","Workshop","Cultural","Gaming"];
   const { announcements } = useSocket(window.location.origin);
   const { user } = useAuth();
@@ -31,6 +32,42 @@ export default function Home() {
     if (user) fetchRecs();
     else setRecs([]);
   }, [user]);
+
+  useEffect(() => {
+  if (user) {
+    fetchFavorites();
+  }
+}, [user]);
+
+async function fetchFavorites() {
+  try {
+    const res = await axios.get(
+      "/api/favorites"
+    );
+
+    setFavorites(
+      res.data.events.map(
+        (e) => e._id
+      )
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function toggleFavorite(
+  eventId
+) {
+  try {
+    await axios.put(
+      `/api/favorites/${eventId}`
+    );
+
+    fetchFavorites();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
   async function fetchEvents(overrides = {}) {
   setLoading(true);
@@ -152,6 +189,20 @@ export default function Home() {
         }}
         loading="lazy"
       />
+
+      <button
+  onClick={(ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    toggleFavorite(e._id);
+  }}
+  className="absolute top-3 right-3 z-20 bg-white/90 dark:bg-slate-900/90 rounded-full p-2 shadow"
+>
+  {favorites.includes(e._id)
+    ? "❤️"
+    : "🤍"}
+</button>
 
       <div className="absolute top-3 left-3 flex items-center gap-2">
         <Badge date={e.date} />

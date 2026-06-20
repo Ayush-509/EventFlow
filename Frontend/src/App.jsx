@@ -12,6 +12,8 @@ import Navbar from "./components/Navbar";
 import EditEvent from "./pages/EditEvent";
 import { ToastProvider } from "./context/ToastContext";
 import Auth from "./pages/Auth";
+import Favorites from "./pages/Favorites";
+import "leaflet/dist/leaflet.css";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -167,6 +169,11 @@ export default function App() {
                   <Dashboard />
                 </PrivateRoute>
               }
+            />
+
+            <Route
+              path="/favorites"
+              element={<Favorites />}
             />
             </Routes>
           </Layout>

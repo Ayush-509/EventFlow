@@ -14,6 +14,8 @@ export default function EditEvent() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState(null);
+const [longitude, setLongitude] = useState(null);
   const [date, setDate] = useState("");
 
   const [generalPrice, setGeneralPrice] = useState("");
