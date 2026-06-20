@@ -190,6 +190,7 @@ async function toggleFavorite(
         loading="lazy"
       />
 
+        {user?.role === "customer" && (
       <button
   onClick={(ev) => {
     ev.preventDefault();
@@ -203,6 +204,7 @@ async function toggleFavorite(
     ? "❤️"
     : "🤍"}
 </button>
+)}
 
       <div className="absolute top-3 left-3 flex items-center gap-2">
         <Badge date={e.date} />
