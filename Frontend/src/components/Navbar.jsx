@@ -61,6 +61,15 @@ export default function Navbar({ theme, setTheme }) {
             Home
           </Link>
 
+          <Link
+          to="/events-map"
+          className={
+          location.pathname === "/events-map"
+          ? "font-semibold text-blue-600"
+          : ""
+          }>Explore Map
+          </Link>
+
           {/* User Not Logged In */}
           {!user ? (
             <Link to="/auth" className="btn">

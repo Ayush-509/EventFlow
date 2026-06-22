@@ -16,6 +16,7 @@ import Favorites from "./pages/Favorites";
 import "leaflet/dist/leaflet.css";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminOrganizers from "./pages/AdminOrganizers";
+import EventsMap from "./pages/EventsMap";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -67,6 +68,10 @@ function useTheme() {
 
 function Layout({ children }) {
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
+
+const hideHero =
+  location.pathname === "/events-map";
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 text-slate-800 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-purple-950 dark:text-slate-100 flex flex-col">
       <Navbar
@@ -74,7 +79,8 @@ function Layout({ children }) {
   setTheme={setTheme}
 />
 
-      <section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
+{!hideHero && (
+<section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <h1 className="text-4xl md:text-5xl pb-2 font-black tracking-tight bg-gradient-to-r from-blue-700 to-cyan-600 dark:from-purple-300 dark:to-cyan-300 bg-clip-text text-transparent">
             Discover and Manage Events
@@ -84,7 +90,7 @@ function Layout({ children }) {
             Register, organize, review, and track your event participation.
           </p>
         </div>
-      </section>
+      </section>)}
 
       <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
         {children}
@@ -179,6 +185,7 @@ export default function App() {
             />
               <Route path="/admin/customers" element={<AdminCustomers />}/>
               <Route path="/admin/organizers" element={<AdminOrganizers />}/>
+              <Route path="/events-map" element={<EventsMap />} />
             </Routes>
           </Layout>
         </BrowserRouter>
