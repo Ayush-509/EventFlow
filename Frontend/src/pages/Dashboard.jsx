@@ -5,14 +5,24 @@ import EventTicket from '../components/EventTicket.jsx';
 import { Link } from "react-router-dom";
 import EventLocationPicker from "../components/EventLocationPicker.jsx";
 import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#A855F7",
+];
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [participants, setParticipants] = useState([]);
@@ -46,7 +56,13 @@ const [longitude, setLongitude] = useState(null);
   eventsByCategory: [],
   ticketsByCategory: [],
   revenueByCategory: [],
+  attendeesByCategory: [],
 });
+const [selectedAnalyticsEvent, setSelectedAnalyticsEvent] =
+  useState("");
+
+const [eventAnalytics, setEventAnalytics] =
+  useState(null);
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -105,6 +121,20 @@ async function loadAnalytics() {
 
     if (data.success) {
       setAnalyticsData(data);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function loadEventAnalytics(eventId) {
+  try {
+    const { data } = await axios.get(
+      `/api/events/analytics/${eventId}`
+    );
+
+    if (data.success) {
+      setEventAnalytics(data);
+      setSelectedAnalyticsEvent(eventId);
     }
   } catch (error) {
     console.log(error);
@@ -423,63 +453,103 @@ showToast(
 
 </div>
   
-  {/* Analytics Charts */}
+{/* OVERALL ANALYTICS */}
+
 <div className="grid md:grid-cols-3 gap-6 mb-8">
 
-  {/* Events by Category */}
+  {/* Events */}
   <div className="bg-white rounded-xl p-4 shadow">
     <h3 className="font-semibold mb-4">
-      Events by Category
+      Events By Category
     </h3>
 
     <ResponsiveContainer width="100%" height={250}>
-      <BarChart
-        data={analyticsData.eventsByCategory}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="category" />
-        <YAxis />
+      <PieChart>
+        <Pie
+          data={analyticsData.eventsByCategory}
+          dataKey="count"
+          nameKey="category"
+          outerRadius={90}
+          label
+        >
+          {analyticsData.eventsByCategory.map(
+            (_, index) => (
+              <Cell
+                key={index}
+                fill={
+                  COLORS[index % COLORS.length]
+                }
+              />
+            )
+          )}
+        </Pie>
+
         <Tooltip />
-        <Bar dataKey="count" />
-      </BarChart>
+      </PieChart>
     </ResponsiveContainer>
   </div>
 
-  {/* Tickets by Category */}
+  {/* Revenue */}
   <div className="bg-white rounded-xl p-4 shadow">
     <h3 className="font-semibold mb-4">
-      Tickets Sold by Category
+      Revenue By Category
     </h3>
 
     <ResponsiveContainer width="100%" height={250}>
-      <BarChart
-        data={analyticsData.ticketsByCategory}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="category" />
-        <YAxis />
+      <PieChart>
+        <Pie
+          data={analyticsData.revenueByCategory}
+          dataKey="revenue"
+          nameKey="category"
+          outerRadius={90}
+          label
+        >
+          {analyticsData.revenueByCategory.map(
+            (_, index) => (
+              <Cell
+                key={index}
+                fill={
+                  COLORS[index % COLORS.length]
+                }
+              />
+            )
+          )}
+        </Pie>
+
         <Tooltip />
-        <Bar dataKey="count" />
-      </BarChart>
+      </PieChart>
     </ResponsiveContainer>
   </div>
 
-  {/* Revenue by Category */}
+  {/* Attendees */}
   <div className="bg-white rounded-xl p-4 shadow">
     <h3 className="font-semibold mb-4">
-      Revenue by Category
+      Attendees By Category
     </h3>
 
     <ResponsiveContainer width="100%" height={250}>
-      <BarChart
-        data={analyticsData.revenueByCategory}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="category" />
-        <YAxis />
+      <PieChart>
+        <Pie
+          data={analyticsData.attendeesByCategory}
+          dataKey="count"
+          nameKey="category"
+          outerRadius={90}
+          label
+        >
+          {analyticsData.attendeesByCategory.map(
+            (_, index) => (
+              <Cell
+                key={index}
+                fill={
+                  COLORS[index % COLORS.length]
+                }
+              />
+            )
+          )}
+        </Pie>
+
         <Tooltip />
-        <Bar dataKey="revenue" />
-      </BarChart>
+      </PieChart>
     </ResponsiveContainer>
   </div>
 
@@ -653,7 +723,17 @@ showToast(
                 >
                   ✏️ Edit Event
                 </Link>
-              <button
+
+                <button
+  onClick={() =>
+    loadEventAnalytics(event._id)
+  }
+  className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+>
+  Analytics
+</button>
+
+            <button
   onClick={async () => {
     await loadParticipants(event._id);
     setSelectedEvent(event._id);
@@ -744,6 +824,116 @@ showToast(
         </table>
       </div>
     )}
+  </div>
+)}
+{eventAnalytics && (
+  <div className="bg-white rounded-xl shadow p-6 mb-8">
+
+    <h2 className="text-2xl font-bold mb-6">
+      {eventAnalytics.eventTitle}
+      Analytics
+    </h2>
+
+    <div className="grid md:grid-cols-2 gap-4 mb-6">
+
+      <div className="border rounded-xl p-4">
+        <h3 className="font-semibold">
+          Total Revenue
+        </h3>
+
+        <p className="text-3xl font-bold text-green-600">
+          ₹{eventAnalytics.totalRevenue}
+        </p>
+      </div>
+
+      <div className="border rounded-xl p-4">
+        <h3 className="font-semibold">
+          Total Attendees
+        </h3>
+
+        <p className="text-3xl font-bold">
+          {eventAnalytics.totalAttendees}
+        </p>
+      </div>
+
+    </div>
+
+    <div className="grid md:grid-cols-2 gap-6">
+
+      <div className="bg-white rounded-xl p-4 border">
+        <h3 className="font-semibold mb-4">
+          Revenue By Ticket Type
+        </h3>
+
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+        >
+          <PieChart>
+            <Pie
+              data={eventAnalytics.revenueByType}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={100}
+              label
+            >
+              {eventAnalytics.revenueByType.map(
+                (_, index) => (
+                  <Cell
+                    key={index}
+                    fill={
+                      COLORS[
+                        index % COLORS.length
+                      ]
+                    }
+                  />
+                )
+              )}
+            </Pie>
+
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="bg-white rounded-xl p-4 border">
+        <h3 className="font-semibold mb-4">
+          Tickets Sold By Type
+        </h3>
+
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+        >
+          <PieChart>
+            <Pie
+              data={eventAnalytics.ticketsByType}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={100}
+              label
+            >
+              {eventAnalytics.ticketsByType.map(
+                (_, index) => (
+                  <Cell
+                    key={index}
+                    fill={
+                      COLORS[
+                        index % COLORS.length
+                      ]
+                    }
+                  />
+                )
+              )}
+            </Pie>
+
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+    </div>
+
   </div>
 )}
 
@@ -882,4 +1072,5 @@ showToast(
     </div>
   );
 }
+
 
