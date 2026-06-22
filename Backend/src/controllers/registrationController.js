@@ -105,7 +105,8 @@ if (
       });
 
       event.ticketsSold[ticketType] += 1;
-
+    // Increase event revenue
+event.revenue += price;
      await event.save();
 
     res.status(201).json({
@@ -176,3 +177,85 @@ export const checkRegistration = async (
     });
   }
 };
+// Get Participants of Event
+export const getParticipants = async (
+  req,
+  res
+) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    const participants =
+      await Registration.find({
+        event: eventId,
+      })
+        .populate("user", "name email")
+        .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      participants,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Export Participants CSV
+export const exportParticipantsCSV =
+  async (req, res) => {
+    try {
+      const { eventId } = req.params;
+
+      const participants =
+        await Registration.find({
+          event: eventId,
+        }).populate(
+          "user",
+          "name email"
+        );
+
+      let csv =
+        "Name,Email,Ticket Type,Ticket ID,Price\n";
+
+      participants.forEach((p) => {
+        csv += `"${p.user?.name || ""}","${
+          p.user?.email || ""
+        }","${p.ticketType}","${
+          p.ticketId
+        }","${p.price}"\n`;
+      });
+
+      res.header(
+        "Content-Type",
+        "text/csv"
+      );
+
+      res.attachment(
+        `participants-${eventId}.csv`
+      );
+
+      return res.send(csv);
+    } catch (error) {
+      console.log(error);
+
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
