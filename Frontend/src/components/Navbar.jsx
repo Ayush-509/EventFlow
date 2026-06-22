@@ -62,6 +62,17 @@ export default function Navbar({ theme, setTheme }) {
           </Link>
 
           <Link
+  to="/messages"
+  className={
+    location.pathname === "/messages"
+      ? "font-semibold text-blue-600"
+      : ""
+  }
+>
+  📨 Messages
+</Link>
+
+          <Link
           to="/events-map"
           className={
           location.pathname === "/events-map"

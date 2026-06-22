@@ -17,6 +17,7 @@ import "leaflet/dist/leaflet.css";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminOrganizers from "./pages/AdminOrganizers";
 import EventsMap from "./pages/EventsMap";
+import Messages from "./pages/Messages";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -186,6 +187,19 @@ export default function App() {
               <Route path="/admin/customers" element={<AdminCustomers />}/>
               <Route path="/admin/organizers" element={<AdminOrganizers />}/>
               <Route path="/events-map" element={<EventsMap />} />
+              <Route
+              path="/messages"
+              element={
+                <PrivateRoute
+                  roles={[
+                    "customer",
+                    "organizer",
+                  ]}
+                >
+                <Messages />
+    </PrivateRoute>
+  }
+/>
             </Routes>
           </Layout>
         </BrowserRouter>
