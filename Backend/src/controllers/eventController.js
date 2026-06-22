@@ -1,6 +1,7 @@
 import Event from "../models/event.js";
 import Review from "../models/review.js";
 import Registration from "../models/registration.js";
+import Favorite from "../models/favorite.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -69,21 +70,29 @@ export const getEvents = async (req, res) => {
 
     const eventsWithPoster = await Promise.all(
   events.map(async (event) => {
-    const reviews = await Review.find({
+    const [reviews, favoriteCount] =
+  await Promise.all([
+    Review.find({
       event: event._id,
-    });
+    }),
 
-    const averageRating =
-      reviews.length > 0
-        ? reviews.reduce(
-            (sum, review) => sum + review.rating,
-            0
-          ) / reviews.length
-        : 0;
+    Favorite.countDocuments({
+      event: event._id,
+    }),
+  ]);
+
+const averageRating =
+  reviews.length > 0
+    ? reviews.reduce(
+        (sum, review) => sum + review.rating,
+        0
+      ) / reviews.length
+    : 0;
 
     return {
       ...event.toObject(),
       averageRating,
+      favoriteCount,
       posterUrl: event.poster
         ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
         : "",
@@ -119,9 +128,16 @@ export const getEventById = async (req, res) => {
       });
     }
 
-    const reviews = await Review.find({
+    const [reviews, favoriteCount] =
+  await Promise.all([
+    Review.find({
       event: event._id,
-    });
+    }),
+
+    Favorite.countDocuments({
+      event: event._id,
+    }),
+  ]);
 
     const averageRating =
       reviews.length > 0
@@ -134,6 +150,7 @@ export const getEventById = async (req, res) => {
     const eventObj = event.toObject();
 
     eventObj.averageRating = averageRating;
+    eventObj.favoriteCount = favoriteCount;
 
     eventObj.posterUrl = event.poster
       ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`

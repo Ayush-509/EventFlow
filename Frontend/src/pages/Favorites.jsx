@@ -112,6 +112,8 @@ export default function Favorites() {
               <div className="mt-2 text-amber-500 text-sm font-medium">
                 ⭐ {e.averageRating?.toFixed?.(1) || "0.0"} / 5
               </div>
+
+              
             </div>
           </Link>
         ))}

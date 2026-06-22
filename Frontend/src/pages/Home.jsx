@@ -233,6 +233,10 @@ async function toggleFavorite(
         <div className="mt-2 text-amber-500 text-sm font-medium">
           ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
         </div>
+
+        <div className="mt-2 text-red-500 text-sm font-medium">
+          ❤️ {e.favoriteCount || 0}
+        </div>
       </div>
     </Link>
   );
