@@ -1,17 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import EventTicket from '../components/EventTicket.jsx';
 import { Link } from "react-router-dom";
 import EventLocationPicker from "../components/EventLocationPicker.jsx";
-
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 export default function Dashboard() {
   const { user, logout } = useAuth();
-  const [mine, setMine] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
+  const [mine, setMine] = useState([]);
   const [location, setLocation] = useState('');
   const [latitude, setLatitude] = useState(null);
 const [longitude, setLongitude] = useState(null);
@@ -30,6 +38,15 @@ const [longitude, setLongitude] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [myEvents, setMyEvents] = useState([]);
   const [deleteEventId, setDeleteEventId] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState({
+  totalEvents: 0,
+  totalAttendees: 0,
+  totalTicketsSold: 0,
+  totalRevenue: 0,
+  eventsByCategory: [],
+  ticketsByCategory: [],
+  revenueByCategory: [],
+});
 
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -37,22 +54,27 @@ const [longitude, setLongitude] = useState(null);
   };
 
   useEffect(() => {
-    if (!user) return;
-    if (user.role === 'customer') loadMyRegs();
-    if (user.role === 'organizer') loadMyEvents();
-    if (user.role === 'admin') loadPending();
-    if (user?.role === "organizer") loadMyEvents();
-  }, [user]);
+  if (!user) return;
+
+  if (user.role === "customer") {
+    loadMyRegs();
+  }
+
+  if (user.role === "organizer") {
+  loadMyEvents();
+  loadAnalytics();
+}
+
+  if (user.role === "admin") {
+    loadPending();
+  }
+}, [user]);
 
   async function loadMyRegs() {
     const res = await axios.get('/api/registrations/my');
     setMine(res.data.registrations || []);
   }
 
-  async function loadMyEvents() {
-    const res = await axios.get('/api/events', { params: { organizer: user.id } });
-    setMine(res.data.events || []);
-  }
 
   async function loadPending() {
     const res = await axios.get('/api/events', { params: { status: 'Pending' } });
@@ -71,6 +93,19 @@ const [longitude, setLongitude] = useState(null);
     );
 
     setMyEvents(data.events);
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function loadAnalytics() {
+  try {
+    const { data } = await axios.get(
+      "/api/events/organizer/analytics"
+    );
+
+    if (data.success) {
+      setAnalyticsData(data);
+    }
   } catch (error) {
     console.log(error);
   }
@@ -116,7 +151,6 @@ const [longitude, setLongitude] = useState(null);
     fd.append('location', location);
     fd.append("latitude", latitude);
 fd.append("longitude", longitude);
-    fd.append('price', price);
     fd.append('category', category);
     fd.append('description', description);
 
@@ -144,11 +178,12 @@ setLongitude(null);
     setStudentPrice("");
 
     await loadMyEvents();
+await loadAnalytics();
 
-    showToast(
-      'success',
-      'Event created successfully'
-    );
+showToast(
+  "success",
+  "Event created successfully"
+);
 
   } catch (error) {
     console.log(error);
@@ -345,149 +380,368 @@ setLongitude(null);
 
 
       {/* ORGANIZER (unchanged logic, slightly polished container) */}
-      {user?.role === 'organizer' && (
-        <div className="grid md:grid-cols-2 gap-5">
-          {/* form unchanged for brevity (same as yours) */}
-          <form onSubmit={createEvent} className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
-            <h2 className="font-semibold mb-3">Create Event</h2>
-            <input className="input w-full mb-2" placeholder="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
-            <input className="input w-full mb-2" type="datetime-local" value={date} onChange={(e)=>setDate(e.target.value)} />
-            <input className="input w-full mb-2" placeholder="Location" value={location} onChange={(e)=>setLocation(e.target.value)} />
-            <div className="mb-4">
-  <p className="font-medium mb-2">
-    Select Event Location
-  </p>
+{user?.role === "organizer" && (
+  <>
+    {/* Analytics Cards */}
+<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-  <EventLocationPicker
-    onLocationSelect={(lat, lng) => {
-      setLatitude(lat);
-      setLongitude(lng);
-    }}
-  />
-
-  {latitude && longitude && (
-    <p className="text-sm mt-2 text-green-600">
-      Selected:
-      {" "}
-      {latitude.toFixed(6)}
-      ,
-      {" "}
-      {longitude.toFixed(6)}
+  <div className="bg-white p-5 rounded-xl shadow">
+    <h3 className="text-gray-500">
+      Total Events
+    </h3>
+    <p className="text-3xl font-bold">
+      {analyticsData.totalEvents}
     </p>
-  )}
+  </div>
+
+  <div className="bg-white p-5 rounded-xl shadow">
+    <h3 className="text-gray-500">
+      Total Attendees
+    </h3>
+    <p className="text-3xl font-bold">
+      {analyticsData.totalAttendees}
+    </p>
+  </div>
+
+  <div className="bg-white p-5 rounded-xl shadow">
+    <h3 className="text-gray-500">
+      Tickets Sold
+    </h3>
+    <p className="text-3xl font-bold">
+      {analyticsData.totalTicketsSold}
+    </p>
+  </div>
+
+  <div className="bg-white p-5 rounded-xl shadow">
+    <h3 className="text-gray-500">
+      Revenue
+    </h3>
+    <p className="text-3xl font-bold text-green-600">
+      ₹{analyticsData.totalRevenue}
+    </p>
+  </div>
+
 </div>
-            <input
-  className="input w-full mb-2"
-  type="number"
-  min="0"
-  placeholder="General Ticket Price (₹)"
-  value={generalPrice}
-  onChange={(e) => setGeneralPrice(e.target.value)}
-/>
+  
+  {/* Analytics Charts */}
+<div className="grid md:grid-cols-3 gap-6 mb-8">
 
-<input
-  className="input w-full mb-2"
-  type="number"
-  min="0"
-  placeholder="VIP Ticket Price (₹)"
-  value={vipPrice}
-  onChange={(e) => setVipPrice(e.target.value)}
-/>
+  {/* Events by Category */}
+  <div className="bg-white rounded-xl p-4 shadow">
+    <h3 className="font-semibold mb-4">
+      Events by Category
+    </h3>
 
-<input
-  className="input w-full mb-2"
-  type="number"
-  min="0"
-  placeholder="Premium Ticket Price (₹)"
-  value={premiumPrice}
-  onChange={(e) => setPremiumPrice(e.target.value)}
-/>
+    <ResponsiveContainer width="100%" height={250}>
+      <BarChart
+        data={analyticsData.eventsByCategory}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="category" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="count" />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
 
-<input
-  className="input w-full mb-2"
-  type="number"
-  min="0"
-  placeholder="Student Ticket Price (₹)"
-  value={studentPrice}
-  onChange={(e) => setStudentPrice(e.target.value)}
-/>
+  {/* Tickets by Category */}
+  <div className="bg-white rounded-xl p-4 shadow">
+    <h3 className="font-semibold mb-4">
+      Tickets Sold by Category
+    </h3>
 
-            <select className="input w-full mb-2" value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option>Tech</option>
-              <option>Startup</option>
-              <option>Entertainment</option>
-              <option>Hackathon</option>
-              <option>Music</option>
-              <option>Sports</option>
-              <option>Education</option>
-              <option>Business</option>
-              <option>Workshop</option>
-              <option>Cultural</option>
-              <option>Gaming</option>
-            </select>
-            
-            <textarea className="input w-full mb-2" value={description} onChange={(e)=>setDescription(e.target.value)} />
-            <input type="file" onChange={(e)=>setPoster(e.target.files[0])} className="mb-3" />
-            <button
-             type="submit"
-             disabled={isPublishing}
-             className={`w-full py-3 rounded-xl font-medium transition ${ isPublishing ? "bg-gray-400 cursor-not-allowed text-white" : "bg-blue-600 hover:bg-blue-700 text-white" }`}>
-             {isPublishing ? "Publishing..." : "Publish"}
-            </button>
-          </form>
+    <ResponsiveContainer width="100%" height={250}>
+      <BarChart
+        data={analyticsData.ticketsByCategory}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="category" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="count" />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+  {/* Revenue by Category */}
+  <div className="bg-white rounded-xl p-4 shadow">
+    <h3 className="font-semibold mb-4">
+      Revenue by Category
+    </h3>
+
+    <ResponsiveContainer width="100%" height={250}>
+      <BarChart
+        data={analyticsData.revenueByCategory}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="category" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="revenue" />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+</div>
+    {/* Create Event Form */}
+    <div className="grid md:grid-cols-2 gap-5">
+      <form
+        onSubmit={createEvent}
+        className="rounded-2xl border p-4 bg-white dark:bg-slate-900"
+      >
+        <h2 className="font-semibold mb-3">
+          Create Event
+        </h2>
+
+        <input
+          className="input w-full mb-2"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+
+        <input
+          className="input w-full mb-2"
+          type="datetime-local"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <input
+          className="input w-full mb-2"
+          placeholder="Location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+
+        <div className="mb-4">
+          <p className="font-medium mb-2">
+            Select Event Location
+          </p>
+
+          <EventLocationPicker
+            onLocationSelect={(lat, lng) => {
+              setLatitude(lat);
+              setLongitude(lng);
+            }}
+          />
+
+          {latitude && longitude && (
+            <p className="text-sm mt-2 text-green-600">
+              Selected: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+            </p>
+          )}
+        </div>
+
+        <input
+          className="input w-full mb-2"
+          type="number"
+          min="0"
+          placeholder="General Ticket Price (₹)"
+          value={generalPrice}
+          onChange={(e) => setGeneralPrice(e.target.value)}
+        />
+
+        <input
+          className="input w-full mb-2"
+          type="number"
+          min="0"
+          placeholder="VIP Ticket Price (₹)"
+          value={vipPrice}
+          onChange={(e) => setVipPrice(e.target.value)}
+        />
+
+        <input
+          className="input w-full mb-2"
+          type="number"
+          min="0"
+          placeholder="Premium Ticket Price (₹)"
+          value={premiumPrice}
+          onChange={(e) => setPremiumPrice(e.target.value)}
+        />
+
+        <input
+          className="input w-full mb-2"
+          type="number"
+          min="0"
+          placeholder="Student Ticket Price (₹)"
+          value={studentPrice}
+          onChange={(e) => setStudentPrice(e.target.value)}
+        />
+
+        <select
+          className="input w-full mb-2"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option>Tech</option>
+          <option>Startup</option>
+          <option>Entertainment</option>
+          <option>Hackathon</option>
+          <option>Music</option>
+          <option>Sports</option>
+          <option>Education</option>
+          <option>Business</option>
+          <option>Workshop</option>
+          <option>Cultural</option>
+          <option>Gaming</option>
+        </select>
+
+        <textarea
+          className="input w-full mb-2"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        <input
+          type="file"
+          onChange={(e) => setPoster(e.target.files[0])}
+          className="mb-3"
+        />
+
+        <button
+          type="submit"
+          disabled={isPublishing}
+          className={`w-full py-3 rounded-xl font-medium transition ${
+            isPublishing
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
+        >
+          {isPublishing ? "Publishing..." : "Publish"}
+        </button>
+      </form>
+    </div>
+
+    {/* My Events */}
+    <div className="card mb-8">
+      <h2 className="text-2xl font-bold mb-4">
+        My Events
+      </h2>
+
+      {myEvents.length === 0 ? (
+        <p>No events created yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {myEvents.map((event) => (
+            <div
+              key={event._id}
+              className="flex justify-between items-center border rounded-xl p-4"
+            >
+              <div>
+                <h3 className="font-semibold text-lg">
+                  {event.title}
+                </h3>
+
+                <p className="text-sm text-gray-500">
+                  {new Date(event.date).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Link
+                  to={`/events/${event._id}`}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                >
+                  View Details
+                </Link>
+
+                <Link
+                  to={`/edit-event/${event._id}`}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                >
+                  ✏️ Edit Event
+                </Link>
+              <button
+  onClick={async () => {
+    await loadParticipants(event._id);
+    setSelectedEvent(event._id);
+  }}
+  className="bg-green-600 text-white px-4 py-2 rounded-lg"
+>
+  View Attendees
+</button>
+
+<button
+  onClick={() => exportCsv(event._id)}
+  className="bg-purple-600 text-white px-4 py-2 rounded-lg"
+>
+  Export CSV
+</button>
+                <button
+                  onClick={() => setDeleteEventId(event._id)}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
-      {user?.role === "organizer" && (
-  <div className="card mb-8">
-    <h2 className="text-2xl font-bold mb-4">
-      My Events
-    </h2>
+    </div>
+  </>
+)}
+{selectedEvent && (
+  <div className="bg-white rounded-xl shadow p-6 mb-8">
 
-    {myEvents.length === 0 ? (
-      <p>No events created yet.</p>
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-2xl font-bold">
+        Event Attendees
+      </h2>
+
+      <button
+        onClick={() => exportCsv(selectedEvent)}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+      >
+        Download CSV
+      </button>
+    </div>
+
+    {participants.length === 0 ? (
+      <p>No attendees registered yet.</p>
     ) : (
-      <div className="space-y-4">
-        {myEvents.map((event) => (
-          <div
-            key={event._id}
-            className="flex justify-between items-center border rounded-xl p-4"
-          >
-            <div>
-              <h3 className="font-semibold text-lg">
-                {event.title}
-              </h3>
+      <div className="overflow-x-auto">
+        <table className="w-full border">
 
-              <p className="text-sm text-gray-500">
-                {new Date(
-                  event.date
-                ).toLocaleDateString()}
-              </p>
-            </div>
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Email</th>
+              <th className="p-2 border">Ticket Type</th>
+              <th className="p-2 border">Ticket ID</th>
+              <th className="p-2 border">Price</th>
+            </tr>
+          </thead>
 
-            <div className="flex gap-2">
-  <Link
-    to={`/events/${event._id}`}
-    className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-  >
-    View Details
-  </Link>
+          <tbody>
+            {participants.map((p) => (
+              <tr key={p._id}>
+                <td className="p-2 border">
+                  {p.user?.name}
+                </td>
 
-  <Link
-  to={`/edit-event/${event._id}`}
-  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
->
-  ✏️ Edit Event
-</Link>
+                <td className="p-2 border">
+                  {p.user?.email}
+                </td>
 
-  <button
-    onClick={() => setDeleteEventId(event._id)}
-    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-  >
-    Delete
-  </button>
-</div>
-          </div>
-        ))}
+                <td className="p-2 border">
+                  {p.ticketType}
+                </td>
+
+                <td className="p-2 border">
+                  {p.ticketId}
+                </td>
+
+                <td className="p-2 border">
+                  ₹{p.price}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
       </div>
     )}
   </div>
@@ -598,23 +852,24 @@ setLongitude(null);
 
         <button
           onClick={async () => {
-            try {
-              await axios.delete(
-                `/api/events/${deleteEventId}`
-              );
+  try {
+    await axios.delete(
+      `/api/events/${deleteEventId}`
+    );
 
-              setDeleteEventId(null);
+    setDeleteEventId(null);
 
-              loadMyEvents();
+    await loadMyEvents();
+    await loadAnalytics();
 
-              showToast(
-                "success",
-                "Event deleted"
-              );
-            } catch (err) {
-              console.log(err);
-            }
-          }}
+    showToast(
+      "success",
+      "Event deleted"
+    );
+  } catch (err) {
+    console.log(err);
+  }
+}}
           className="bg-red-600 text-white px-4 py-2 rounded-lg"
         >
           Delete
@@ -627,3 +882,4 @@ setLongitude(null);
     </div>
   );
 }
+
