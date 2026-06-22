@@ -8,6 +8,7 @@ import {
   getMyEvents,
   getOrganizerEvents,
   getOrganizerAnalytics,
+  getEventAnalytics,
 } from "../controllers/eventController.js";
 
 import upload from "../middlewares/multer.js";
@@ -18,11 +19,18 @@ const router = express.Router();
 // Public Routes
 router.get("/", getEvents);
 
-// Organizer Analytics
+// Overall Organizer Analytics
 router.get(
   "/organizer/analytics",
   protect,
   getOrganizerAnalytics
+);
+
+// Single Event Analytics
+router.get(
+  "/analytics/:eventId",
+  protect,
+  getEventAnalytics
 );
 
 // Organizer Events
