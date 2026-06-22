@@ -36,9 +36,17 @@ const registrationSchema = new mongoose.Schema(
       unique: true,
     },
 
+    // Amount paid for ticket
     price: {
       type: Number,
       default: 0,
+    },
+
+    // Payment status
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Refunded"],
+      default: "Paid",
     },
 
     qrCodeDataUrl: {
@@ -49,6 +57,17 @@ const registrationSchema = new mongoose.Schema(
     barcodeDataUrl: {
       type: String,
       default: "",
+    },
+
+    // Useful for exports/reports
+    checkedIn: {
+      type: Boolean,
+      default: false,
+    },
+
+    checkedInAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
