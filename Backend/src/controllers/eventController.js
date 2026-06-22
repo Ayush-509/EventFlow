@@ -1,7 +1,6 @@
 import Event from "../models/event.js";
 import Review from "../models/review.js";
 import Registration from "../models/registration.js";
-import Favorite from "../models/favorite.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -70,29 +69,21 @@ export const getEvents = async (req, res) => {
 
     const eventsWithPoster = await Promise.all(
   events.map(async (event) => {
-    const [reviews, favoriteCount] =
-  await Promise.all([
-    Review.find({
+    const reviews = await Review.find({
       event: event._id,
-    }),
+    });
 
-    Favorite.countDocuments({
-      event: event._id,
-    }),
-  ]);
-
-const averageRating =
-  reviews.length > 0
-    ? reviews.reduce(
-        (sum, review) => sum + review.rating,
-        0
-      ) / reviews.length
-    : 0;
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + review.rating,
+            0
+          ) / reviews.length
+        : 0;
 
     return {
       ...event.toObject(),
       averageRating,
-      favoriteCount,
       posterUrl: event.poster
         ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
         : "",
@@ -128,16 +119,9 @@ export const getEventById = async (req, res) => {
       });
     }
 
-    const [reviews, favoriteCount] =
-  await Promise.all([
-    Review.find({
+    const reviews = await Review.find({
       event: event._id,
-    }),
-
-    Favorite.countDocuments({
-      event: event._id,
-    }),
-  ]);
+    });
 
     const averageRating =
       reviews.length > 0
@@ -150,7 +134,6 @@ export const getEventById = async (req, res) => {
     const eventObj = event.toObject();
 
     eventObj.averageRating = averageRating;
-    eventObj.favoriteCount = favoriteCount;
 
     eventObj.posterUrl = event.poster
       ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
@@ -414,6 +397,113 @@ export const getMyEvents = async (req, res) => {
       events,
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getOrganizerAnalytics = async (req, res) => {
+  try {
+    const organizerId = req.user.id;
+
+    // All events created by organizer
+    const events = await Event.find({
+      organizer: organizerId,
+    });
+
+    const eventIds = events.map((event) => event._id);
+
+    // All registrations for organizer's events
+    const registrations = await Registration.find({
+      event: { $in: eventIds },
+      status: "registered",
+    }).populate("event");
+
+    // Total Events
+    const totalEvents = events.length;
+
+    // Total Attendees
+    const totalAttendees = registrations.length;
+
+    // Total Tickets Sold
+    const totalTicketsSold = registrations.length;
+
+    // Total Revenue
+    const totalRevenue = registrations.reduce(
+      (sum, reg) => sum + (reg.price || 0),
+      0
+    );
+
+    // Events By Category
+    const eventsByCategoryMap = {};
+
+    events.forEach((event) => {
+      const category = event.category || "Other";
+
+      eventsByCategoryMap[category] =
+        (eventsByCategoryMap[category] || 0) + 1;
+    });
+
+    const eventsByCategory = Object.entries(
+      eventsByCategoryMap
+    ).map(([category, count]) => ({
+      category,
+      count,
+    }));
+
+    // Tickets By Category
+    const ticketsByCategoryMap = {};
+
+    registrations.forEach((reg) => {
+      const category =
+        reg.event?.category || "Other";
+
+      ticketsByCategoryMap[category] =
+        (ticketsByCategoryMap[category] || 0) + 1;
+    });
+
+    const ticketsByCategory = Object.entries(
+      ticketsByCategoryMap
+    ).map(([category, count]) => ({
+      category,
+      count,
+    }));
+
+    // Revenue By Category
+    const revenueByCategoryMap = {};
+
+    registrations.forEach((reg) => {
+      const category =
+        reg.event?.category || "Other";
+
+      revenueByCategoryMap[category] =
+        (revenueByCategoryMap[category] || 0) +
+        (reg.price || 0);
+    });
+
+    const revenueByCategory = Object.entries(
+      revenueByCategoryMap
+    ).map(([category, revenue]) => ({
+      category,
+      revenue,
+    }));
+
+    res.status(200).json({
+      success: true,
+
+      totalEvents,
+      totalAttendees,
+      totalTicketsSold,
+      totalRevenue,
+
+      eventsByCategory,
+      ticketsByCategory,
+      revenueByCategory,
+    });
+  } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
