@@ -454,14 +454,18 @@ export const getOrganizerAnalytics = async (req, res) => {
 
     // Tickets By Category
     const ticketsByCategoryMap = {};
+    const attendeesByCategoryMap = {};  
 
     registrations.forEach((reg) => {
-      const category =
-        reg.event?.category || "Other";
+  const category =
+    reg.event?.category || "Other";
 
-      ticketsByCategoryMap[category] =
-        (ticketsByCategoryMap[category] || 0) + 1;
-    });
+  ticketsByCategoryMap[category] =
+    (ticketsByCategoryMap[category] || 0) + 1;
+
+  attendeesByCategoryMap[category] =
+    (attendeesByCategoryMap[category] || 0) + 1;
+});
 
     const ticketsByCategory = Object.entries(
       ticketsByCategoryMap
@@ -469,6 +473,12 @@ export const getOrganizerAnalytics = async (req, res) => {
       category,
       count,
     }));
+    const attendeesByCategory = Object.entries(
+  attendeesByCategoryMap
+).map(([category, count]) => ({
+  category,
+  count,
+}));
 
     // Revenue By Category
     const revenueByCategoryMap = {};
@@ -490,16 +500,110 @@ export const getOrganizerAnalytics = async (req, res) => {
     }));
 
     res.status(200).json({
+  success: true,
+
+  totalEvents,
+  totalAttendees,
+  totalTicketsSold,
+  totalRevenue,
+
+  eventsByCategory,
+  ticketsByCategory,
+  revenueByCategory,
+  attendeesByCategory,
+});
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export const getEventAnalytics = async (
+  req,
+  res
+) => {
+  try {
+    const { eventId } = req.params;
+
+    const event =
+      await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+    if (event.organizer.toString() !== req.user.id) {
+  return res.status(403).json({
+    success: false,
+    message: "Not authorized",
+  });
+}
+
+    const registrations =
+      await Registration.find({
+        event: eventId,
+        status: "registered",
+      });
+
+    const totalAttendees =
+      registrations.length;
+
+    const totalRevenue =
+      registrations.reduce(
+        (sum, reg) =>
+          sum + (reg.price || 0),
+        0
+      );
+
+    const ticketsByType = {
+      General: 0,
+      VIP: 0,
+      Premium: 0,
+      Student: 0,
+    };
+
+    const revenueByType = {
+      General: 0,
+      VIP: 0,
+      Premium: 0,
+      Student: 0,
+    };
+
+    registrations.forEach((reg) => {
+      ticketsByType[reg.ticketType] += 1;
+
+      revenueByType[reg.ticketType] +=
+        reg.price || 0;
+    });
+
+    res.status(200).json({
       success: true,
 
-      totalEvents,
+      eventTitle: event.title,
+
       totalAttendees,
-      totalTicketsSold,
       totalRevenue,
 
-      eventsByCategory,
-      ticketsByCategory,
-      revenueByCategory,
+      ticketsByType:
+        Object.entries(
+          ticketsByType
+        ).map(([name, value]) => ({
+          name,
+          value,
+        })),
+
+      revenueByType:
+        Object.entries(
+          revenueByType
+        ).map(([name, value]) => ({
+          name,
+          value,
+        })),
     });
   } catch (error) {
     console.log(error);
@@ -510,3 +614,4 @@ export const getOrganizerAnalytics = async (req, res) => {
     });
   }
 };
+
