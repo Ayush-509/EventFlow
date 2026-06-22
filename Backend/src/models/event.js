@@ -2,24 +2,40 @@ import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
   {
-    title: String,
-    description: String,
-    category: String,
+    title: {
+      type: String,
+      required: true,
+    },
+
+    description: {
+      type: String,
+      default: "",
+    },
+
+    category: {
+      type: String,
+      required: true,
+    },
+
     location: {
-  type: String,
-  required: true,
-},
+      type: String,
+      required: true,
+    },
 
-latitude: {
-  type: Number,
-  default: null,
-},
+    latitude: {
+      type: Number,
+      default: null,
+    },
 
-longitude: {
-  type: Number,
-  default: null,
-},
-    date: Date,
+    longitude: {
+      type: Number,
+      default: null,
+    },
+
+    date: {
+      type: Date,
+      required: true,
+    },
 
     // Ticket Prices
     ticketPrices: {
@@ -81,6 +97,12 @@ longitude: {
       },
     },
 
+    // Total revenue generated from this event
+    revenue: {
+      type: Number,
+      default: 0,
+    },
+
     poster: {
       type: String,
       default: "",
@@ -89,6 +111,7 @@ longitude: {
     organizer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
     status: {
