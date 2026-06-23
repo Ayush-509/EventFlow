@@ -137,6 +137,16 @@ export default function Navbar({ theme, setTheme }) {
                     </Link>
                   )}
 
+                  {user?.role === "organizer" && (
+                    <Link
+                      to="/createEvent"
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    >
+                      Create Event
+                    </Link>
+                  )}
+
                   {user?.role === "admin" && (
                     <div>
                       <Link

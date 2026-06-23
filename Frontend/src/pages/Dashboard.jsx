@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import EventTicket from '../components/EventTicket.jsx';
 import { Link } from "react-router-dom";
-import EventLocationPicker from "../components/EventLocationPicker.jsx";
+// EventLocationPicker removed — create-event form removed from this page
 import {
   PieChart,
   Pie,
@@ -11,10 +11,13 @@ import {
   Tooltip,
   ResponsiveContainer,
   BarChart,
+  ComposedChart,
+  Line,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
+  Legend,
 } from "recharts";
 const COLORS = [
   "#0088FE",
@@ -27,25 +30,13 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const [participants, setParticipants] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
   const [mine, setMine] = useState([]);
-  const [location, setLocation] = useState('');
-  const [latitude, setLatitude] = useState(null);
-const [longitude, setLongitude] = useState(null);
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('Tech');
-  const [description, setDescription] = useState('');
-  const [poster, setPoster] = useState(null);
+  
   const [Pending, setPending] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [downloadAction, setDownloadAction] = useState(null);
   const [toast, setToast] = useState({ open: false, type: 'info', message: '' });
-  const [generalPrice, setGeneralPrice] = useState("");
-  const [vipPrice, setVipPrice] = useState("");
-  const [premiumPrice, setPremiumPrice] = useState("");
-  const [studentPrice, setStudentPrice] = useState("");
-  const [isPublishing, setIsPublishing] = useState(false);
+  
   const [myEvents, setMyEvents] = useState([]);
   const [deleteEventId, setDeleteEventId] = useState(null);
   const [analyticsData, setAnalyticsData] = useState({
@@ -165,67 +156,6 @@ async function loadEventAnalytics(eventId) {
     a.click();
     window.URL.revokeObjectURL(url);
   }
-
-  async function createEvent(e) {
-  e.preventDefault();
-
-  if (isPublishing) return;
-
-  try {
-    setIsPublishing(true);
-
-    const fd = new FormData();
-
-    fd.append('title', title);
-    fd.append('date', date);
-    fd.append('location', location);
-    fd.append("latitude", latitude);
-fd.append("longitude", longitude);
-    fd.append('category', category);
-    fd.append('description', description);
-
-    fd.append("generalPrice", generalPrice);
-    fd.append("vipPrice", vipPrice);
-    fd.append("premiumPrice", premiumPrice);
-    fd.append("studentPrice", studentPrice);
-
-    if (poster) fd.append('poster', poster);
-
-    await axios.post('/api/events', fd);
-
-    setTitle('');
-    setDate('');
-    setLocation('');
-    setLatitude(null);
-setLongitude(null);
-    setPrice('');
-    setDescription('');
-    setPoster(null);
-
-    setGeneralPrice("");
-    setVipPrice("");
-    setPremiumPrice("");
-    setStudentPrice("");
-
-    await loadMyEvents();
-await loadAnalytics();
-
-showToast(
-  "success",
-  "Event created successfully"
-);
-
-  } catch (error) {
-    console.log(error);
-
-    showToast(
-      'error',
-      'Failed to create event'
-    );
-  } finally {
-    setIsPublishing(false);
-  }
-}
 
   async function approve(id) {
     await axios.post(`/api/admin/events/${id}/approve`);
@@ -408,536 +338,317 @@ showToast(
   </div>
 )}
 
-
-      {/* ORGANIZER (unchanged logic, slightly polished container) */}
+{/* ================= ORGANIZER DASHBOARD ================= */}
 {user?.role === "organizer" && (
-  <>
-    {/* Analytics Cards */}
-<div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-
-  <div className="bg-white p-5 rounded-xl shadow">
-    <h3 className="text-gray-500">
-      Total Events
-    </h3>
-    <p className="text-3xl font-bold">
-      {analyticsData.totalEvents}
-    </p>
-  </div>
-
-  <div className="bg-white p-5 rounded-xl shadow">
-    <h3 className="text-gray-500">
-      Total Attendees
-    </h3>
-    <p className="text-3xl font-bold">
-      {analyticsData.totalAttendees}
-    </p>
-  </div>
-
-  <div className="bg-white p-5 rounded-xl shadow">
-    <h3 className="text-gray-500">
-      Tickets Sold
-    </h3>
-    <p className="text-3xl font-bold">
-      {analyticsData.totalTicketsSold}
-    </p>
-  </div>
-
-  <div className="bg-white p-5 rounded-xl shadow">
-    <h3 className="text-gray-500">
-      Revenue
-    </h3>
-    <p className="text-3xl font-bold text-green-600">
-      ₹{analyticsData.totalRevenue}
-    </p>
-  </div>
-
-</div>
-  
-{/* OVERALL ANALYTICS */}
-
-<div className="grid md:grid-cols-3 gap-6 mb-8">
-
-  {/* Events */}
-  <div className="bg-white rounded-xl p-4 shadow">
-    <h3 className="font-semibold mb-4">
-      Events By Category
-    </h3>
-
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={analyticsData.eventsByCategory}
-          dataKey="count"
-          nameKey="category"
-          outerRadius={90}
-          label
-        >
-          {analyticsData.eventsByCategory.map(
-            (_, index) => (
-              <Cell
-                key={index}
-                fill={
-                  COLORS[index % COLORS.length]
-                }
-              />
-            )
-          )}
-        </Pie>
-
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-  {/* Revenue */}
-  <div className="bg-white rounded-xl p-4 shadow">
-    <h3 className="font-semibold mb-4">
-      Revenue By Category
-    </h3>
-
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={analyticsData.revenueByCategory}
-          dataKey="revenue"
-          nameKey="category"
-          outerRadius={90}
-          label
-        >
-          {analyticsData.revenueByCategory.map(
-            (_, index) => (
-              <Cell
-                key={index}
-                fill={
-                  COLORS[index % COLORS.length]
-                }
-              />
-            )
-          )}
-        </Pie>
-
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-  {/* Attendees */}
-  <div className="bg-white rounded-xl p-4 shadow">
-    <h3 className="font-semibold mb-4">
-      Attendees By Category
-    </h3>
-
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={analyticsData.attendeesByCategory}
-          dataKey="count"
-          nameKey="category"
-          outerRadius={90}
-          label
-        >
-          {analyticsData.attendeesByCategory.map(
-            (_, index) => (
-              <Cell
-                key={index}
-                fill={
-                  COLORS[index % COLORS.length]
-                }
-              />
-            )
-          )}
-        </Pie>
-
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-</div>
-    {/* Create Event Form */}
-    <div className="grid md:grid-cols-2 gap-5">
-      <form
-        onSubmit={createEvent}
-        className="rounded-2xl border p-4 bg-white dark:bg-slate-900"
-      >
-        <h2 className="font-semibold mb-3">
+  <div className="space-y-10 text-slate-900 dark:text-slate-100 min-h-screen p-1 transition-colors duration-300">
+    
+    {/* Header Section */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 dark:border-slate-800 pb-6 gap-4">
+      <div>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">
+          Manage your events ecosystem, track real-time distribution metrics, and review performance trends.
+        </p>
+      </div>
+      
+      {/* Optional Top Actions Bar */}
+      <div className="flex items-center gap-3">
+        <Link to="/createEvent" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
           Create Event
-        </h2>
-
-        <input
-          className="input w-full mb-2"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <input
-          className="input w-full mb-2"
-          type="datetime-local"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-
-        <input
-          className="input w-full mb-2"
-          placeholder="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-
-        <div className="mb-4">
-          <p className="font-medium mb-2">
-            Select Event Location
-          </p>
-
-          <EventLocationPicker
-            onLocationSelect={(lat, lng) => {
-              setLatitude(lat);
-              setLongitude(lng);
-            }}
-          />
-
-          {latitude && longitude && (
-            <p className="text-sm mt-2 text-green-600">
-              Selected: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-            </p>
-          )}
-        </div>
-
-        <input
-          className="input w-full mb-2"
-          type="number"
-          min="0"
-          placeholder="General Ticket Price (₹)"
-          value={generalPrice}
-          onChange={(e) => setGeneralPrice(e.target.value)}
-        />
-
-        <input
-          className="input w-full mb-2"
-          type="number"
-          min="0"
-          placeholder="VIP Ticket Price (₹)"
-          value={vipPrice}
-          onChange={(e) => setVipPrice(e.target.value)}
-        />
-
-        <input
-          className="input w-full mb-2"
-          type="number"
-          min="0"
-          placeholder="Premium Ticket Price (₹)"
-          value={premiumPrice}
-          onChange={(e) => setPremiumPrice(e.target.value)}
-        />
-
-        <input
-          className="input w-full mb-2"
-          type="number"
-          min="0"
-          placeholder="Student Ticket Price (₹)"
-          value={studentPrice}
-          onChange={(e) => setStudentPrice(e.target.value)}
-        />
-
-        <select
-          className="input w-full mb-2"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option>Tech</option>
-          <option>Startup</option>
-          <option>Entertainment</option>
-          <option>Hackathon</option>
-          <option>Music</option>
-          <option>Sports</option>
-          <option>Education</option>
-          <option>Business</option>
-          <option>Workshop</option>
-          <option>Cultural</option>
-          <option>Gaming</option>
-        </select>
-
-        <textarea
-          className="input w-full mb-2"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <input
-          type="file"
-          onChange={(e) => setPoster(e.target.files[0])}
-          className="mb-3"
-        />
-
-        <button
-          type="submit"
-          disabled={isPublishing}
-          className={`w-full py-3 rounded-xl font-medium transition ${
-            isPublishing
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-blue-600 hover:bg-blue-700 text-white"
-          }`}
-        >
-          {isPublishing ? "Publishing..." : "Publish"}
-        </button>
-      </form>
+        </Link>
+      </div>
     </div>
 
-    {/* My Events */}
-    <div className="card mb-8">
-      <h2 className="text-2xl font-bold mb-4">
-        My Events
-      </h2>
+    {/* KPI Cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      {/* Total Events */}
+      <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-blue-100 font-medium text-xs tracking-wider uppercase">Total Events</p>
+            <h2 className="text-4xl font-black mt-2 tracking-tight">{analyticsData?.totalEvents ?? 0}</h2>
+          </div>
+          <div className="w-14 h-14 bg-white/10 dark:bg-black/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner backdrop-blur-sm">
+            🎟️
+          </div>
+        </div>
+      </div>
 
-      {myEvents.length === 0 ? (
-        <p>No events created yet.</p>
+      {/* Attendees */}
+      <div className="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 text-white rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-purple-100 font-medium text-xs tracking-wider uppercase">Attendees</p>
+            <h2 className="text-4xl font-black mt-2 tracking-tight">{analyticsData?.totalAttendees ?? 0}</h2>
+          </div>
+          <div className="w-14 h-14 bg-white/10 dark:bg-black/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner backdrop-blur-sm">
+            👥
+          </div>
+        </div>
+      </div>
+
+      {/* Tickets Sold */}
+      <div className="bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700 text-white rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-orange-100 font-medium text-xs tracking-wider uppercase">Tickets Sold</p>
+            <h2 className="text-4xl font-black mt-2 tracking-tight">{analyticsData?.totalTicketsSold ?? 0}</h2>
+          </div>
+          <div className="w-14 h-14 bg-white/10 dark:bg-black/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner backdrop-blur-sm">
+            🎫
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue */}
+      <div className="bg-gradient-to-br from-green-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-green-100 font-medium text-xs tracking-wider uppercase">Total Revenue</p>
+            <h2 className="text-4xl font-black mt-2 tracking-tight">
+              ₹{(analyticsData?.totalRevenue ?? 0).toLocaleString("en-IN")}
+            </h2>
+          </div>
+          <div className="w-14 h-14 bg-white/10 dark:bg-black/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner backdrop-blur-sm">
+            💰
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Primary Trend Analysis (Line + Bar Chart Combo) */}
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+      <div className="mb-4">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg tracking-tight">Revenue & Tickets Sold Over Time</h3>
+        <p className="text-xs text-slate-400 dark:text-slate-500">Performance timeline overview</p>
+      </div>
+      <div className="h-[350px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={analyticsData?.historicalData ?? []} margin={{ top: 10, right: -10, left: -10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} />
+            <YAxis yAxisId="left" stroke="#10b981" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+            <YAxis yAxisId="right" orientation="right" stroke="#6366f1" fontSize={11} tickLine={false} axisLine={false} />
+            <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px' }} />
+            <Legend verticalAlign="top" height={36} iconType="circle" />
+            <Bar yAxisId="left" dataKey="revenue" name="Revenue (₹)" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
+            <Line yAxisId="right" type="monotone" dataKey="tickets" name="Tickets Sold" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+
+    {/* Secondary Distribution Matrix (Upgraded Donut Charts) */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Events By Category */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Events By Category</h3>
+        <div className="h-[240px] w-full flex items-center justify-center relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={analyticsData?.eventsByCategory ?? []}
+                dataKey="count"
+                nameKey="category"
+                outerRadius={85}
+                innerRadius={60}
+                paddingAngle={3}
+              >
+                {(analyticsData?.eventsByCategory ?? []).map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute text-center pointer-events-none">
+            <span className="block text-2xl font-black">{analyticsData?.totalEvents ?? 0}</span>
+            <span className="text-[10px] uppercase text-slate-400 tracking-wider">Total Shows</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue By Category */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Revenue By Category</h3>
+        <div className="h-[240px] w-full flex items-center justify-center relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={analyticsData?.revenueByCategory ?? []}
+                dataKey="revenue"
+                nameKey="category"
+                outerRadius={85}
+                innerRadius={60}
+                paddingAngle={3}
+              >
+                {(analyticsData?.revenueByCategory ?? []).map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute text-center pointer-events-none">
+            <span className="block text-sm font-black text-emerald-500">₹{(analyticsData?.totalRevenue ?? 0).toLocaleString("en-IN", { notation: "compact" })}</span>
+            <span className="text-[10px] uppercase text-slate-400 tracking-wider">Earnings</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Attendees By Category */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Attendees By Category</h3>
+        <div className="h-[240px] w-full flex items-center justify-center relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={analyticsData?.attendeesByCategory ?? []}
+                dataKey="count"
+                nameKey="category"
+                outerRadius={85}
+                innerRadius={60}
+                paddingAngle={3}
+              >
+                {(analyticsData?.attendeesByCategory ?? []).map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px' }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute text-center pointer-events-none">
+            <span className="block text-2xl font-black">{analyticsData?.totalAttendees ?? 0}</span>
+            <span className="text-[10px] uppercase text-slate-400 tracking-wider">Crowd Count</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Horizontal Bar Chart: Revenue By Specific Events */}
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+      <div className="mb-4">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg tracking-tight">Top Performing Events</h3>
+        <p className="text-xs text-slate-400 dark:text-slate-500">Ranked by overall gross revenue generation</p>
+      </div>
+      <div className="h-[280px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={myEvents?.slice(0, 5) ?? []} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+            <XAxis type="number" stroke="#94a3b8" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+            <YAxis type="category" dataKey="title" stroke="#94a3b8" fontSize={11} tickLine={false} width={100} />
+            <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px' }} />
+            <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 6, 6, 0]} maxBarSize={24} name="Revenue (₹)" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+
+    {/* Event Management Cards */}
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">My Events</h2>
+      </div>
+
+      {!myEvents || myEvents.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center shadow-sm border border-slate-100 dark:border-slate-800">
+          <p className="text-slate-500 dark:text-slate-400 font-medium">No Events found.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
-          {myEvents.map((event) => (
-            <div
-              key={event._id}
-              className="flex justify-between items-center border rounded-xl p-4"
-            >
-              <div>
-                <h3 className="font-semibold text-lg">
-                  {event.title}
-                </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {myEvents.map((event) => {
+            const eventDate = new Date(event.date);
+            const now = new Date();
+            const status = eventDate < now ? "Completed" : "Upcoming";
 
-                <p className="text-sm text-gray-500">
-                  {new Date(event.date).toLocaleDateString()}
-                </p>
+            return (
+              <div
+                key={event._id}
+                className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-300 p-6 border border-black dark:border-slate-800 flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                      {event.category}
+                    </span>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        status === "Upcoming"
+                          ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/30"
+                          : "bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400"
+                      }`}
+                    >
+                      {status}
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-xl mb-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 tracking-tight">
+                    {event.title}
+                  </h3>
+
+                  <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold mb-6 flex items-center gap-1">
+                    📅 {new Date(event.date).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+
+                {/* Styled Adaptive Action Grid */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Link
+                      to={`/events/${event._id}`}
+                      className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white font-semibold text-center py-2.5 rounded-xl transition-all text-xs active:scale-95"
+                    >
+                      View Details
+                    </Link>
+                    <Link
+                      to={`/edit-event/${event._id}`}
+                      className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-800 dark:hover:bg-slate-700 hover:text-white dark:hover:text-white font-semibold text-center py-2.5 rounded-xl transition-all text-xs active:scale-95"
+                    >
+                      Edit
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => loadEventAnalytics(event._id)}
+                      className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white font-semibold py-2.5 rounded-xl transition-all text-xs active:scale-95"
+                    >
+                      Analytics
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await loadParticipants(event._id);
+                        setSelectedEvent(event._id);
+                      }}
+                      className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white font-semibold py-2.5 rounded-xl transition-all text-xs active:scale-95"
+                    >
+                      Attendees
+                    </button>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 items-center">
+                    <button
+                      onClick={() => exportCsv(event._id)}
+                      className="col-span-2 bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 hover:bg-purple-600 dark:hover:bg-purple-600 hover:text-white font-bold py-2 rounded-xl transition-all text-[11px] uppercase tracking-wider active:scale-95"
+                    >
+                      Export CSV
+                    </button>
+                    <button
+                      onClick={() => setDeleteEventId(event._id)}
+                      className="border border-red-200 dark:border-red-900/40 text-red-500 dark:text-red-400 hover:bg-red-600 dark:hover:bg-red-600 hover:text-white py-2 rounded-xl transition-all text-[11px] font-bold uppercase tracking-wider active:scale-95"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              <div className="flex gap-2">
-                <Link
-                  to={`/events/${event._id}`}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-                >
-                  View Details
-                </Link>
-
-                <Link
-                  to={`/edit-event/${event._id}`}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                >
-                  ✏️ Edit Event
-                </Link>
-
-                <button
-  onClick={() =>
-    loadEventAnalytics(event._id)
-  }
-  className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
->
-  Analytics
-</button>
-
-            <button
-  onClick={async () => {
-    await loadParticipants(event._id);
-    setSelectedEvent(event._id);
-  }}
-  className="bg-green-600 text-white px-4 py-2 rounded-lg"
->
-  View Attendees
-</button>
-
-<button
-  onClick={() => exportCsv(event._id)}
-  className="bg-purple-600 text-white px-4 py-2 rounded-lg"
->
-  Export CSV
-</button>
-                <button
-                  onClick={() => setDeleteEventId(event._id)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
-  </>
-)}
-{selectedEvent && (
-  <div className="bg-white rounded-xl shadow p-6 mb-8">
-
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-bold">
-        Event Attendees
-      </h2>
-
-      <button
-        onClick={() => exportCsv(selectedEvent)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-      >
-        Download CSV
-      </button>
-    </div>
-
-    {participants.length === 0 ? (
-      <p>No attendees registered yet.</p>
-    ) : (
-      <div className="overflow-x-auto">
-        <table className="w-full border">
-
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Ticket Type</th>
-              <th className="p-2 border">Ticket ID</th>
-              <th className="p-2 border">Price</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {participants.map((p) => (
-              <tr key={p._id}>
-                <td className="p-2 border">
-                  {p.user?.name}
-                </td>
-
-                <td className="p-2 border">
-                  {p.user?.email}
-                </td>
-
-                <td className="p-2 border">
-                  {p.ticketType}
-                </td>
-
-                <td className="p-2 border">
-                  {p.ticketId}
-                </td>
-
-                <td className="p-2 border">
-                  ₹{p.price}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-      </div>
-    )}
-  </div>
-)}
-{eventAnalytics && (
-  <div className="bg-white rounded-xl shadow p-6 mb-8">
-
-    <h2 className="text-2xl font-bold mb-6">
-      {eventAnalytics.eventTitle}
-      Analytics
-    </h2>
-
-    <div className="grid md:grid-cols-2 gap-4 mb-6">
-
-      <div className="border rounded-xl p-4">
-        <h3 className="font-semibold">
-          Total Revenue
-        </h3>
-
-        <p className="text-3xl font-bold text-green-600">
-          ₹{eventAnalytics.totalRevenue}
-        </p>
-      </div>
-
-      <div className="border rounded-xl p-4">
-        <h3 className="font-semibold">
-          Total Attendees
-        </h3>
-
-        <p className="text-3xl font-bold">
-          {eventAnalytics.totalAttendees}
-        </p>
-      </div>
-
-    </div>
-
-    <div className="grid md:grid-cols-2 gap-6">
-
-      <div className="bg-white rounded-xl p-4 border">
-        <h3 className="font-semibold mb-4">
-          Revenue By Ticket Type
-        </h3>
-
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-          <PieChart>
-            <Pie
-              data={eventAnalytics.revenueByType}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={100}
-              label
-            >
-              {eventAnalytics.revenueByType.map(
-                (_, index) => (
-                  <Cell
-                    key={index}
-                    fill={
-                      COLORS[
-                        index % COLORS.length
-                      ]
-                    }
-                  />
-                )
-              )}
-            </Pie>
-
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="bg-white rounded-xl p-4 border">
-        <h3 className="font-semibold mb-4">
-          Tickets Sold By Type
-        </h3>
-
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-          <PieChart>
-            <Pie
-              data={eventAnalytics.ticketsByType}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={100}
-              label
-            >
-              {eventAnalytics.ticketsByType.map(
-                (_, index) => (
-                  <Cell
-                    key={index}
-                    fill={
-                      COLORS[
-                        index % COLORS.length
-                      ]
-                    }
-                  />
-                )
-              )}
-            </Pie>
-
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-    </div>
-
   </div>
 )}
 
-      {/* ADMIN */}
       {/* ADMIN */}
 {user?.role === "admin" && (
   <div className="space-y-4">

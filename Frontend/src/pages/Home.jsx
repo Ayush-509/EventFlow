@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import useSocket from '../hooks/useSocket.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { sortEvents } from '../context/sortEvent.jsx';
 import SortBar from '../components/SortBar';
@@ -20,7 +19,6 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState('');
   const [favorites, setFavorites] = useState([]);
   const categories = ["All","Tech","Startup","Entertainment","Hackathon","Music","Sports","Education","Business","Workshop","Cultural","Gaming"];
-  const { announcements } = useSocket(window.location.origin);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -190,6 +188,7 @@ async function toggleFavorite(
         loading="lazy"
       />
 
+        {user?.role === "customer" && (
       <button
   onClick={(ev) => {
     ev.preventDefault();
@@ -203,6 +202,7 @@ async function toggleFavorite(
     ? "❤️"
     : "🤍"}
 </button>
+)}
 
       <div className="absolute top-3 left-3 flex items-center gap-2">
         <Badge date={e.date} />
@@ -228,15 +228,13 @@ async function toggleFavorite(
           ₹ {e.ticketPrices.General || 0}
         </div>
 
-        <div className="mt-2 flex items-center justify-between">
-  <div className="text-amber-500 text-sm font-medium">
-    ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
-  </div>
+        <div className="mt-2 text-amber-500 text-sm font-medium">
+          ⭐ {e.averageRating?.toFixed?.(1) || '0.0'} / 5
+        </div>
 
-  <div className="text-red-500 text-sm font-medium">
-    ❤️ {e.favoriteCount || 0}
-  </div>
-</div>
+        <div className="mt-2 text-red-500 text-sm font-medium">
+        ❤️ {e.favoriteCount || 0}
+      </div>
       </div>
     </Link>
   );
@@ -270,19 +268,6 @@ async function toggleFavorite(
       {error && (
         <div className="rounded-2xl p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
           {error}
-        </div>
-      )}
-
-      {announcements.length > 0 && (
-        <div className="rounded-3xl p-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-purple-950/40 border border-blue-100 dark:border-purple-800/30">
-          <div className="font-semibold text-lg mb-2 text-slate-800 dark:text-slate-100">
-            Live announcements
-          </div>
-          <ul className="text-sm text-slate-700 dark:text-slate-300 list-disc pl-5 space-y-1">
-            {announcements.slice(0, 3).map((a, i) => (
-              <li key={i}>{a.message}</li>
-            ))}
-          </ul>
         </div>
       )}
 

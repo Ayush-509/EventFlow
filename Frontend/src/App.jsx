@@ -18,6 +18,7 @@ import AdminCustomers from "./pages/AdminCustomers";
 import AdminOrganizers from "./pages/AdminOrganizers";
 import EventsMap from "./pages/EventsMap";
 import Messages from "./pages/Messages";
+import CreateEvent from "./pages/createEvent";
 
 function PrivateRoute({ children, roles }) {
   const { user } = useAuth();
@@ -184,6 +185,7 @@ export default function App() {
               path="/favorites"
               element={<Favorites />}
             />
+            <Route path="/createEvent" element={<CreateEvent />} />
               <Route path="/admin/customers" element={<AdminCustomers />}/>
               <Route path="/admin/organizers" element={<AdminOrganizers />}/>
               <Route path="/events-map" element={<EventsMap />} />
