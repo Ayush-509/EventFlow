@@ -13,7 +13,7 @@ import profileRoutes from "./src/routes/profileRoutes.js";
 import announcementRoutes from "./src/routes/announcementRoutes.js";
 import favoriteRoutes from "./src/routes/favoriteRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
-
+import eventGalleryRoutes from "./src/routes/eventGalleryRoutes.js";
 
 import path from "path";
 
@@ -41,6 +41,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/gallery", eventGalleryRoutes);
 app.use(
   "/uploads",
   express.static(path.join(process.cwd(), "uploads"))
