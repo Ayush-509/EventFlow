@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementSection from "../components/AnnouncementSection";
 import EventLocationMap from "../components/EventLocationMap.jsx";
-import ChatDrawer from "../components/ChatDrawer.jsx";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ export default function EventDetails() {
   const [selectedTicketType, setSelectedTicketType] = useState("General");
   const [otherEvents, setOtherEvents] = useState([]);
   const [showMap, setShowMap] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -209,7 +207,8 @@ const soldOut =
   totalTickets > 0 &&
   remainingTickets <= 0;
   if (!event) return <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading event details...</div>;
-
+  const isCompleted =
+  new Date(event.date) < new Date();
   
 
   return (
@@ -331,30 +330,16 @@ const soldOut =
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
-
-          {user?.role === "customer" && (
-            <button
-  onClick={() => {
-    if (!registered) {
-      showToast(
-        "warning",
-        "Register for this event to chat with the organizer."
-      );
-      return;
+            {isCompleted && (
+  <button
+    onClick={() =>
+      navigate(`/gallery/${event._id}`)
     }
-
-    setChatOpen(true);
-  }}
-  className="
-    px-4 py-2 rounded-lg
-    bg-emerald-600
-    hover:bg-emerald-700
-    text-white
-  "
->
-  💬 Chat with Organizer
-</button>)}
-
+    className="px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+  >
+    📸 View Gallery
+  </button>
+)}
           </div>
         </div>
       </div>
@@ -553,12 +538,6 @@ const soldOut =
     </div>
   </div>
 )}
-
-<ChatDrawer
-  open={chatOpen}
-  onClose={() => setChatOpen(false)}
-  eventTitle={event.title}
-/>
     </div>
 
     
