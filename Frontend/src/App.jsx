@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import EventDetails from './pages/EventDetails.jsx';
+import EventGallery from "./pages/EventGallery";
 import Dashboard from './pages/Dashboard.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
@@ -70,10 +71,6 @@ function useTheme() {
 
 function Layout({ children }) {
   const { theme, setTheme } = useTheme();
-  const location = useLocation();
-
-const hideHero =
-  location.pathname === "/events-map";
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 text-slate-800 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-purple-950 dark:text-slate-100 flex flex-col">
       <Navbar
@@ -81,8 +78,7 @@ const hideHero =
   setTheme={setTheme}
 />
 
-{!hideHero && (
-<section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
+      <section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <h1 className="text-4xl md:text-5xl pb-2 font-black tracking-tight bg-gradient-to-r from-blue-700 to-cyan-600 dark:from-purple-300 dark:to-cyan-300 bg-clip-text text-transparent">
             Discover and Manage Events
@@ -92,7 +88,7 @@ const hideHero =
             Register, organize, review, and track your event participation.
           </p>
         </div>
-      </section>)}
+      </section>
 
       <main className="max-w-7xl mx-auto px-6 py-8 flex-1 w-full">
         {children}
@@ -146,7 +142,7 @@ export default function App() {
               {/* all routes */}
               <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventDetails />} />
-
+            <Route path="/gallery/:eventId" element={<EventGallery />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={ <PrivateRoute roles={[ "customer", "organizer", "admin", ]} > <Profile /> </PrivateRoute> }/>
             <Route path="/edit-event/:id" element={ <PrivateRoute roles={["organizer"]}> <EditEvent /> </PrivateRoute> }/>
@@ -188,20 +184,6 @@ export default function App() {
             <Route path="/createEvent" element={<CreateEvent />} />
               <Route path="/admin/customers" element={<AdminCustomers />}/>
               <Route path="/admin/organizers" element={<AdminOrganizers />}/>
-              <Route path="/events-map" element={<EventsMap />} />
-              <Route
-              path="/messages"
-              element={
-                <PrivateRoute
-                  roles={[
-                    "customer",
-                    "organizer",
-                  ]}
-                >
-                <Messages />
-    </PrivateRoute>
-  }
-/>
             </Routes>
           </Layout>
         </BrowserRouter>
@@ -209,3 +191,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
