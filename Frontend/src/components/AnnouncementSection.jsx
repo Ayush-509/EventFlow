@@ -54,12 +54,12 @@ export default function AnnouncementSection({
   return (
     <div className="mt-10">
 
-      <h2 className="text-2xl font-bold mb-4">
+      <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-slate-100">
         Announcements
       </h2>
 
       {isOrganizer && (
-        <div className="bg-white p-4 rounded-xl shadow mb-6">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow mb-6 border border-slate-200 dark:border-slate-700">
 
           <input
             type="text"
@@ -68,7 +68,7 @@ export default function AnnouncementSection({
             onChange={(e) =>
               setTitle(e.target.value)
             }
-            className="w-full border p-3 mb-3 rounded"
+            className="w-full border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 mb-3 rounded dark:placeholder-slate-400"
           />
 
           <textarea
@@ -77,12 +77,12 @@ export default function AnnouncementSection({
             onChange={(e) =>
               setMessage(e.target.value)
             }
-            className="w-full border p-3 rounded"
+            className="w-full border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 p-3 rounded dark:placeholder-slate-400"
           />
 
           <button
             onClick={createAnnouncement}
-            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
+            className="mt-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-4 py-2 rounded transition"
           >
             Post Announcement
           </button>
@@ -92,28 +92,28 @@ export default function AnnouncementSection({
       {announcements.map((a) => (
   <div
     key={a._id}
-    className="bg-white p-4 rounded-xl shadow mb-3"
+    className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow mb-3 border border-slate-200 dark:border-slate-700"
   >
     <div className="flex justify-between items-start">
-      <h3 className="font-bold">
+      <h3 className="font-bold text-slate-900 dark:text-slate-100">
         📢 {a.title}
       </h3>
 
       {isOrganizer && (
         <button
   onClick={() => setDeleteId(a._id)}
-  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+  className="bg-blue-500 hover:bg-red-600 dark:bg-blue-600 dark:hover:bg-red-700 text-white px-3 py-1 rounded transition"
 >
   Delete
 </button>
       )}
     </div>
 
-    <p className="mt-2">
+    <p className="mt-2 text-slate-700 dark:text-slate-300">
       {a.message}
     </p>
 
-    <p className="text-sm text-gray-500 mt-2">
+    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
       By {a.organizer?.name}
     </p>
   </div>
