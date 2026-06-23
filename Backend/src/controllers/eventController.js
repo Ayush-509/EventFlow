@@ -1,6 +1,7 @@
 import Event from "../models/event.js";
 import Review from "../models/review.js";
 import Registration from "../models/registration.js";
+import Favorite from "../models/favorite.js";
 
 export const getEvents = async (req, res) => {
   try {
@@ -80,14 +81,21 @@ export const getEvents = async (req, res) => {
             0
           ) / reviews.length
         : 0;
+        const favoriteCount =
+  await Favorite.countDocuments({
+    event: event._id,
+  });
 
     return {
-      ...event.toObject(),
-      averageRating,
-      posterUrl: event.poster
-        ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
-        : "",
-    };
+  ...event.toObject(),
+
+  averageRating,
+  favoriteCount,
+
+  posterUrl: event.poster
+    ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+    : "",
+};
   })
 );
 
@@ -134,6 +142,10 @@ export const getEventById = async (req, res) => {
     const eventObj = event.toObject();
 
     eventObj.averageRating = averageRating;
+    eventObj.favoriteCount =
+  await Favorite.countDocuments({
+    event: event._id,
+  });
 
     eventObj.posterUrl = event.poster
       ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
@@ -360,14 +372,21 @@ export const getOrganizerEvents = async (req, res) => {
                 0
               ) / reviews.length
             : 0;
+            const favoriteCount =
+  await Favorite.countDocuments({
+    event: event._id,
+  });
 
         return {
-          ...event.toObject(),
-          averageRating,
-          posterUrl: event.poster
-            ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
-            : "",
-        };
+  ...event.toObject(),
+
+  averageRating,
+  favoriteCount,
+
+  posterUrl: event.poster
+    ? `${req.protocol}://${req.get("host")}/uploads/${event.poster}`
+    : "",
+};
       })
     );
 
@@ -389,13 +408,28 @@ export const getOrganizerEvents = async (req, res) => {
 export const getMyEvents = async (req, res) => {
   try {
     const events = await Event.find({
-      organizer: req.user.id,
-    }).sort({ createdAt: -1 });
+  organizer: req.user.id,
+}).sort({ createdAt: -1 });
 
-    res.status(200).json({
-      success: true,
-      events,
-    });
+const eventsWithFavorites =
+  await Promise.all(
+    events.map(async (event) => {
+      const favoriteCount =
+        await Favorite.countDocuments({
+          event: event._id,
+        });
+
+      return {
+        ...event.toObject(),
+        favoriteCount,
+      };
+    })
+  );
+
+res.status(200).json({
+  success: true,
+  events: eventsWithFavorites,
+});
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -614,4 +648,5 @@ export const getEventAnalytics = async (
     });
   }
 };
+
 
