@@ -270,7 +270,7 @@ const soldOut =
   {/* Collapsible Map */}
   <div
     className={`transition-all duration-500 ease-in-out overflow-hidden ${
-      showMap ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+      showMap ? "max-h-[425px] opacity-100" : "max-h-0 opacity-0"
     }`}
   >
     <div className="p-3 bg-white dark:bg-slate-900">

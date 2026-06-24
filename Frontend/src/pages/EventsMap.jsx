@@ -101,7 +101,7 @@ export default function EventsMap() {
 
                 <Link
                   to={`/events/${event._id}`}
-                  className="block text-center bg-blue-600 text-white px-3 py-2 rounded-lg"
+                  className="block text-center bg-white text-blue-600 hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-600 px-3 py-2 rounded-lg"
                 >
                   View Event
                 </Link>

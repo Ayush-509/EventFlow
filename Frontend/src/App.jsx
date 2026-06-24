@@ -181,6 +181,8 @@ export default function App() {
               path="/favorites"
               element={<Favorites />}
             />
+            <Route path="/events-map" element={<EventsMap />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/createEvent" element={<CreateEvent />} />
               <Route path="/admin/customers" element={<AdminCustomers />}/>
               <Route path="/admin/organizers" element={<AdminOrganizers />}/>
