@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementSection from "../components/AnnouncementSection";
 import EventLocationMap from "../components/EventLocationMap.jsx";
+import ChatDrawer from "../components/ChatDrawer.jsx";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function EventDetails() {
   const [selectedTicketType, setSelectedTicketType] = useState("General");
   const [otherEvents, setOtherEvents] = useState([]);
   const [showMap, setShowMap] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -330,6 +332,28 @@ const soldOut =
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
+             {user?.role === "customer" && (
+            <button
+  onClick={() => {
+    if (!registered) {
+      showToast(
+        "warning",
+        "Register for this event to chat with the organizer."
+      );
+      return;
+    }
+
+    setChatOpen(true);
+  }}
+  className="
+    px-4 py-2 rounded-lg
+    bg-emerald-600
+    hover:bg-emerald-700
+    text-white
+  "
+>
+  💬 Chat with Organizer
+</button>)}
             {isCompleted && (
   <button
     onClick={() =>
@@ -462,6 +486,11 @@ const soldOut =
   </div>
 )}
 
+      <ChatDrawer
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        eventTitle={event?.title || 'Event Chat'}
+      />
       {showTicketModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[400px]">
