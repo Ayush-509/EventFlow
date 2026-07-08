@@ -11,11 +11,11 @@ if (!fs.existsSync(uploadPath)) {
 }
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination(req, file, cb) {
     cb(null, uploadPath);
   },
 
-  filename: function (req, file, cb) {
+  filename(req, file, cb) {
     const uniqueName =
       Date.now() +
       "-" +
@@ -26,30 +26,29 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (
-  req,
-  file,
-  cb
-) => {
+const fileFilter = (req, file, cb) => {
   const allowedTypes = [
+    // Images
     "image/jpeg",
     "image/jpg",
     "image/png",
     "image/webp",
+
+    // Videos
     "video/mp4",
     "video/webm",
     "video/ogg",
-    "video/quicktime",
+    "video/quicktime", // .mov
+    "video/x-msvideo", // .avi
+    "video/x-matroska", // .mkv
   ];
 
-  if (
-    allowedTypes.includes(file.mimetype)
-  ) {
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(
       new Error(
-        "Only image and video files are allowed"
+        "Only image and video files are allowed."
       ),
       false
     );
