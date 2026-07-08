@@ -1,25 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function EventGallery() {
   const { eventId } = useParams();
+  const { user } = useAuth();
 
   const [gallery, setGallery] = useState([]);
   const [file, setFile] = useState(null);
+  const [caption, setCaption] = useState("");
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  const fileRef = useRef(null);
+
   useEffect(() => {
-    fetchGallery();
+    if (eventId) {
+      fetchGallery();
+    }
   }, [eventId]);
 
   async function fetchGallery() {
     try {
-      const res = await axios.get(
-        `/api/gallery/${eventId}`
-      );
-
+      const res = await axios.get(`/api/gallery/${eventId}`);
       setGallery(res.data.gallery || []);
     } catch (error) {
       console.log(error);
@@ -31,159 +35,150 @@ export default function EventGallery() {
 
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("media", file);
-
     try {
       setUploading(true);
 
-      await axios.post(
-        `/api/gallery/${eventId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
+      const formData = new FormData();
+      formData.append("media", file);
+      formData.append("caption", caption);
+
+      await axios.post(`/api/gallery/${eventId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setFile(null);
+      setCaption("");
+
+      if (fileRef.current) {
+        fileRef.current.value = "";
+      }
 
       fetchGallery();
 
-      alert(
-        "Media uploaded successfully!"
-      );
+      alert("Media uploaded successfully.");
     } catch (error) {
       console.log(error);
-
-      alert(
-        error?.response?.data?.message ||
-          "Upload failed"
-      );
+      alert(error.response?.data?.message || "Upload failed");
     } finally {
       setUploading(false);
     }
   }
 
+  async function deleteMedia(id) {
+    if (!window.confirm("Delete this media?")) return;
+
+    try {
+      await axios.delete(`/api/gallery/media/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      fetchGallery();
+      alert("Media deleted successfully.");
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Delete failed");
+    }
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="mt-10">
+      <h2 className="text-2xl font-bold mb-6">
+        📸 Event Gallery
+      </h2>
 
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
-            📸 Event Gallery
-          </h1>
+      {user && (
+        <div className="bg-white dark:bg-slate-900 border rounded-xl p-5 mb-8 shadow">
+          <form onSubmit={uploadMedia} className="space-y-4">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => setFile(e.target.files[0])}
+              className="w-full border rounded-lg p-3"
+            />
 
-          <p className="text-slate-500 mt-1">
-            Share memories from this event
-          </p>
+            <textarea
+              placeholder="Write a caption (optional)"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              className="w-full border rounded-lg p-3"
+            />
+
+            <button
+              type="submit"
+              disabled={!file || uploading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg disabled:bg-gray-400"
+            >
+              {uploading ? "Uploading..." : "Upload"}
+            </button>
+          </form>
         </div>
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 mb-8 shadow-sm">
-
-        <form
-          onSubmit={uploadMedia}
-          className="flex flex-col md:flex-row gap-4"
-        >
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={(e) =>
-              setFile(e.target.files[0])
-            }
-            className="flex-1 border rounded-lg p-3"
-          />
-
-          <button
-            type="submit"
-            disabled={!file || uploading}
-            className="px-5 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:bg-gray-400"
-          >
-            {uploading
-              ? "Uploading..."
-              : "Upload"}
-          </button>
-        </form>
-
-      </div>
+      )}
 
       {gallery.length === 0 ? (
-        <div className="text-center py-20">
-
-          <div className="text-6xl mb-3">
-            📷
-          </div>
-
-          <h3 className="text-xl font-semibold">
-            No media uploaded yet
-          </h3>
-
-          <p className="text-slate-500 mt-2">
-            Be the first to share a memory.
-          </p>
-
+        <div className="text-center py-12 text-gray-500">
+          No media uploaded yet.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
+        <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
           {gallery.map((item) => (
             <div
               key={item._id}
-              className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition"
+              className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow hover:shadow-lg transition"
             >
-
-              {item.mediaType ===
-              "image" ? (
+              {item.mediaType === "image" ? (
                 <img
                   src={`/uploads/${item.mediaUrl}`}
                   alt=""
-                  onClick={() =>
-                    setPreview(item)
-                  }
-                  className="w-full h-72 object-cover cursor-pointer group-hover:scale-105 transition duration-500"
+                  onClick={() => setPreview(item)}
+                  className="w-full h-72 object-cover cursor-pointer hover:scale-105 transition"
                 />
               ) : (
-                <video
-                  controls
-                  className="w-full h-72"
-                >
-                  <source
-                    src={`/uploads/${item.mediaUrl}`}
-                  />
+                <video controls className="w-full h-72 object-cover">
+                  <source src={`/uploads/${item.mediaUrl}`} />
                 </video>
               )}
 
               <div className="p-4">
-                <p className="text-sm text-slate-500">
-                  Uploaded by
+                <p className="font-semibold">
+                  {item.uploadedBy?.name || "Unknown User"}
                 </p>
 
-                <p className="font-medium text-slate-800 dark:text-slate-100">
-                  {item.uploadedBy?.name ||
-                    "Anonymous"}
+                {item.caption && (
+                  <p className="text-gray-600 dark:text-gray-300 mt-2">
+                    {item.caption}
+                  </p>
+                )}
+
+                <p className="text-xs text-gray-500 mt-2">
+                  {new Date(item.createdAt).toLocaleString()}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
-  {new Date(
-    item.createdAt
-  ).toLocaleString()}
-</p>
+
+                {(user &&
+                  (user.id === item.uploadedBy?._id ||
+                    user.role === "admin")) && (
+                  <button
+                    onClick={() => deleteMedia(item._id)}
+                    className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition"
+                  >
+                    🗑 Delete Media
+                  </button>
+                )}
               </div>
-
             </div>
           ))}
-
         </div>
       )}
 
       {preview && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() =>
-            setPreview(null)
-          }
+          onClick={() => setPreview(null)}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-5"
         >
           <img
             src={`/uploads/${preview.mediaUrl}`}
