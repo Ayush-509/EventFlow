@@ -24,8 +24,17 @@ const eventGallerySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    // ADD THIS
+    caption: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model(
