@@ -428,10 +428,10 @@ CLOUDINARY_API_SECRET=
 
 # 👨‍💻 Created By
 
-**Anus-hub119**
+[**Anus-hub119**](https://github.com/Anus-hub119)
 
-**devanshi014**
+[**devanshi014**](https://github.com/devanshi014)
 
-**Ayush-509**
+[**Ayush-509**](https://github.com/Ayush-509)
 
 ---
