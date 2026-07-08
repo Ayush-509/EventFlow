@@ -22,6 +22,7 @@ export default function EventDetails() {
   const [otherEvents, setOtherEvents] = useState([]);
   const [showMap, setShowMap] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [paying, setPaying] = useState(false);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
     setTimeout(() => setToast({ open: false, type: 'info', message: '' }), 5000);
@@ -38,6 +39,13 @@ export default function EventDetails() {
         axios.get(`/api/reviews/${id}`),
       ]);
       setEvent(e.data.event);
+      const availableTypes = Object.entries(e.data.event.ticketLimits || {})
+  .filter(([_, limit]) => limit > 0)
+  .map(([type]) => type);
+
+if (availableTypes.length > 0) {
+  setSelectedTicketType(availableTypes[0]);
+}
       const organizerId = e.data.event.organizer?._id;
 
 if (organizerId) {
@@ -54,17 +62,21 @@ if (organizerId) {
         setHasReviewed(!!userReview);
       }
 
-      if (user) {
-  const statusRes = await axios.get(
-    `/api/registrations/${id}/status`,
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }
-  );
+   if (user) {
+  try {
+    const statusRes = await axios.get(
+      `/api/registrations/${id}/status`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
 
-  setRegistered(statusRes.data.registered);
+    setRegistered(statusRes.data.registered);
+  } catch {
+    setRegistered(false);
+  }
 }
     } catch (err) {
       showToast('error', 'Failed to load event details.');
@@ -73,77 +85,115 @@ if (organizerId) {
 
   async function registerEvent() {
   if (user?.role !== "customer") {
-    showToast(
-      "warning",
-      "To register for events, please log in as a customer."
-    );
-    return;
+    showToast("warning", "To register for events, please log in as a customer.");
+    return false;
   }
 
   try {
     await axios.post(
-      `/api/registrations/${id}/register`,
-      {
-        ticketType: selectedTicketType,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
+  `/api/registrations/${id}/register`,
+  {
+    ticketType: selectedTicketType,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
     setRegistered(true);
+    showToast("success", "Successfully registered!");
 
-    showToast(
-      "success",
-      "Successfully registered!"
-    );
+    return true;
+
   } catch (error) {
     showToast(
       "error",
-      error.response?.data?.message ||
-      "Registration failed"
+      error.response?.data?.message || "Registration failed"
     );
+
+    return false;
   }
 }
 const handlePayment = async () => {
+  setPaying(true);
   try {
-    const amount =
-      event.ticketPrices[selectedTicketType];
+    const amount = event?.ticketPrices?.[selectedTicketType];
+
+if (!amount || amount <= 0) {
+  showToast("error", "Invalid ticket price.");
+  setPaying(false);
+  return;
+}
 
     const { data } = await axios.post(
-      "/api/payments/create-order",
-      { amount },
-      
-    );
+  "/api/payments/create-order",
+  { amount },
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
 
-    const options = {
+  const options = {
   key: import.meta.env.VITE_RAZORPAY_KEY,
-
   amount: data.order.amount,
-
   currency: "INR",
-
   name: "EventFlow",
-
   description: `${selectedTicketType} Ticket`,
-
   order_id: data.order.id,
 
-  handler: async function () {
-    await registerEvent();
+  handler: async function (response) {
+    try {
+      await axios.post(
+        "/api/payments/verify",
+        response,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-    setRegistered(true);
+      const success = await registerEvent();
 
-    setShowTicketModal(false);
+      if (!success) {
+        setPaying(false);
+        return;
+      }
 
-    showToast(
-      "success",
-      "Payment successful & registration completed!"
-    );
+      await load();
+      setShowTicketModal(false);
+
+      showToast(
+        "success",
+        "Payment successful & registration completed!"
+      );
+    } catch (err) {
+      console.error(err);
+
+      showToast(
+        "error",
+        err.response?.data?.message || "Payment verification failed."
+      );
+    } finally {
+      setPaying(false);
+    }
+  },
+
+  modal: {
+    ondismiss: () => {
+      setPaying(false);
+    },
   },
 };
+
+if (!window.Razorpay) {
+  showToast("error", "Razorpay SDK not loaded.");
+  setPaying(false); 
+  return;
+}
 
     const razorpay =
       new window.Razorpay(options);
@@ -151,8 +201,15 @@ const handlePayment = async () => {
     razorpay.open();
 
   } catch (error) {
-    console.log(error);
-  }
+  console.error(error);
+
+  showToast(
+    "error",
+    error.response?.data?.message ||
+      "Payment failed. Please try again."
+  );
+  setPaying(false);
+}
 };
 
 function getDirections() {
@@ -176,9 +233,30 @@ function getDirections() {
   
 
   async function submitReview() {
+
+    if (!isCompleted) {
+  showToast("warning", "Reviews can only be posted after the event ends.");
+  return;
+}
+
+if (!registered) {
+  showToast("warning", "Only registered participants can review this event.");
+  return;
+} 
     if (!comment.trim()) return;
     try {
-      await axios.post(`/api/reviews/${id}`, { rating, comment });
+      await axios.post(
+  `/api/reviews/${id}`,
+  {
+    rating,
+    comment,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  }
+);
       showToast('success', 'Review posted successfully!');
       setComment('');
       await load();
@@ -196,11 +274,8 @@ function getDirections() {
   const totalTickets =
   event?.ticketLimits?.[selectedTicketType] || 0;
 
-const soldTickets =
-  event?.ticketsSold?.[selectedTicketType] || 0;
-
 const remainingTickets =
-  totalTickets - soldTickets;
+  event?.remainingTickets?.[selectedTicketType] || 0;
 
 const ticketPrice =
   event?.ticketPrices?.[selectedTicketType] || 0;
@@ -208,8 +283,18 @@ const ticketPrice =
 const soldOut =
   totalTickets > 0 &&
   remainingTickets <= 0;
-  if (!event) return <div className="text-center py-20 text-slate-500 dark:text-slate-400">Loading event details...</div>;
-  const isCompleted =
+
+  if (!event) {
+  return (
+    <div className="flex justify-center items-center py-24">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+    </div>
+  );
+}
+const hasTickets = Object.values(event?.ticketLimits || {})
+  .some(limit => limit > 0);
+
+const isCompleted =
   new Date(event.date) < new Date();
   
 
@@ -243,10 +328,13 @@ const soldOut =
 
       <div className="grid md:grid-cols-2 gap-6">
         <img
-          src={event.posterUrl || '/placeholder.svg'}
-          alt="Event Poster"
-          className="w-full h-64 object-cover rounded-xl shadow-md"
-        />
+  src={event.posterUrl || "/placeholder.svg"}
+  alt="Event Poster"
+  onError={(e) => {
+    e.currentTarget.src = "/placeholder.svg";
+  }}
+  className="w-full h-64 object-cover rounded-xl shadow-md"
+/>
         <div className="space-y-3">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{event.title}</h1>
           <p className="text-slate-700 dark:text-slate-300">{event.description}</p>
@@ -306,7 +394,12 @@ const soldOut =
           </div>
           <div className="flex flex-wrap gap-3 mt-3">
           <button
-  disabled={registered || user?.role !== "customer"}
+  disabled={
+    !hasTickets ||
+    registered ||
+    user?.role !== "customer" ||
+    isCompleted
+  }
   onClick={() => {
     if (user?.role !== "customer") {
       showToast(
@@ -316,18 +409,39 @@ const soldOut =
       return;
     }
 
-    setShowTicketModal(true);
+    if (isCompleted) {
+  showToast(
+    "warning",
+    "This event has already ended."
+  );
+  return;
+}
+
+if (!hasTickets) {
+  showToast(
+    "warning",
+    "No ticket types are available for this event."
+  );
+  return;
+}
+
+setShowTicketModal(true);
   }}
   className={`px-4 py-2 rounded-lg text-white ${
-    registered
-      ? "bg-gray-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+    registered || isCompleted
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-indigo-600 hover:bg-indigo-700"
   }`}
 >
   {registered
-    ? "Registered"
-    : user?.role !== "customer"
-    ? "Customers Only"
-    : "Register"}
+  ? "Registered"
+  : isCompleted
+  ? "Event Ended"
+  : !hasTickets
+  ? "No Tickets"
+  : user?.role !== "customer"
+  ? "Customers Only"
+  : "Register"}
 </button>
             <button className="btn-outline" onClick={shareEvent}>
               Share
@@ -377,7 +491,10 @@ const soldOut =
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
         <h2 className="font-semibold mb-3 text-lg text-slate-800 dark:text-slate-100">Reviews</h2>
 
-        {user?.role === "customer" && !hasReviewed && (
+        {user?.role === "customer" &&
+ registered &&
+ isCompleted &&
+ !hasReviewed && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <select
               className="input"
@@ -401,8 +518,28 @@ const soldOut =
             </button>
           </div>
         )}
+        
+        {user?.role === "customer" &&
+ !isCompleted && (
+  <div className="bg-blue-50 border border-blue-300 rounded-lg p-3 mb-3">
+    <p className="text-blue-700">
+      Reviews can be submitted after the event has ended.
+    </p>
+  </div>
+)}
+{user?.role === "customer" &&
+ isCompleted &&
+ !registered &&
+ !hasReviewed && (
+  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
+    <p className="text-yellow-700">
+      Only registered participants can review this event.
+    </p>
+  </div>
+)}
 
-        {user && hasReviewed && (
+{user?.role === "customer" &&
+ hasReviewed &&  (
           <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-3">
             <p className="text-green-800 dark:text-green-200 text-sm">
               ✅ You have already reviewed this event.
@@ -445,10 +582,10 @@ const soldOut =
       src={ev.posterUrl || "/placeholder.svg"}
       alt={ev.title}
       className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-105"
-      onError={(e) => {
-        e.currentTarget.onerror = null;
-        e.currentTarget.src = "/placeholder.svg";
-      }}
+      onError={(e)=>{
+    e.currentTarget.onerror=null;
+    e.currentTarget.src="/placeholder.svg";
+}}
       loading="lazy"
     />
 
@@ -501,26 +638,16 @@ const soldOut =
 
       <select
   value={selectedTicketType}
-  onChange={(e) =>
-    setSelectedTicketType(e.target.value)
-  }
+  onChange={(e) => setSelectedTicketType(e.target.value)}
   className="w-full border rounded-lg p-3 mb-4"
 >
-  <option value="General">
-    General
-  </option>
-
-  <option value="VIP">
-    VIP
-  </option>
-
-  <option value="Premium">
-    Premium
-  </option>
-
-  <option value="Student">
-    Student
-  </option>
+  {Object.entries(event.ticketLimits || {}).map(([type, limit]) =>
+    limit > 0 ? (
+      <option key={type} value={type}>
+    {type} - ₹{event.ticketPrices?.[type] || 0}
+</option>
+    ) : null
+  )}
 </select>
 
 <div className="bg-slate-50 rounded-xl p-4 mb-4 space-y-2">
@@ -551,16 +678,18 @@ const soldOut =
 
         <button
   onClick={handlePayment}
-  disabled={soldOut}
+  disabled={soldOut || paying}
   className={`flex-1 rounded-lg p-2 text-white ${
-    soldOut
-      ? "bg-gray-400 cursor-not-allowed"
-      : "bg-indigo-600 hover:bg-indigo-700"
-  }`}
+    soldOut || paying
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-indigo-600 hover:bg-indigo-700"
+}`}
 >
-  {soldOut
-    ? "Sold Out"
-    : "Pay & Register"}
+  {paying
+? "Processing..."
+: soldOut
+? "Sold Out"
+: "Pay & Register"}
 </button>
       </div>
 
