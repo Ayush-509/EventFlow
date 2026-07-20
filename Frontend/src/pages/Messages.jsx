@@ -1,73 +1,353 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import socket from "../socket";
 
 export default function Messages() {
   const { user } = useAuth();
+
+console.log("Logged User:", user);
   const isOrganizer = user?.role === "organizer";
 
-  // Sidebar DATA (still frontend-only structure)
-  const organizerEvents = [
-    {
-      id: "e1",
-      event: "React Workshop",
-      date: "15 July 2026",
-      location: "Bhopal",
-      participants: [
-        { id: "u1", name: "Ayush", ticket: "VIP", unread: 1 },
-        { id: "u2", name: "Rahul", ticket: "General", unread: 0 },
-        { id: "u3", name: "Priya", ticket: "Student", unread: 0 },
-      ],
-    },
-  ];
+const [events, setEvents] = useState([]);
 
-  const customerChats = [];
+const [participants, setParticipants] = useState([]);
 
-  const sidebarData = isOrganizer ? organizerEvents : customerChats;
+const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const [selectedEvent, setSelectedEvent] = useState(
-    sidebarData[0] || null
-  );
+const [selectedParticipant, setSelectedParticipant] = useState(null);
 
-  const [selectedUser, setSelectedUser] = useState(
-    isOrganizer ? sidebarData[0]?.participants?.[0] : null
-  );
+const [conversationId, setConversationId] = useState("");
 
-  // messages stored per conversation (event + user based)
-  const [conversationMap, setConversationMap] = useState({});
+const [messages, setMessages] = useState([]);
 
-  const getChatKey = () => {
-    if (!selectedEvent) return null;
+const [text, setText] = useState("");
 
-    if (isOrganizer) {
-      return `${selectedEvent.id}_${selectedUser?.id}`;
-    }
+const bottomRef = useRef(null);
 
-    return selectedEvent.id;
-  };
+useEffect(() => {
 
-  const chatKey = getChatKey();
-  const messages = conversationMap[chatKey] || [];
+    bottomRef.current?.scrollIntoView({
 
-  const [text, setText] = useState("");
+        behavior:"smooth"
 
-  const sendMessage = () => {
-    if (!text.trim() || !chatKey) return;
+    });
 
-    const newMsg = {
-      id: Date.now(),
-      text,
-      sender: "me",
-      time: new Date().toISOString(),
+},[messages]);
+useEffect(() => {
+
+    if (!user) return;
+
+    console.log("Joining room:", user.id);
+
+    socket.emit("join", user.id);
+
+}, [user]);
+
+useEffect(()=>{
+
+    socket.on("receiveMessage",(message)=>{
+
+        setMessages(prev=>{
+
+            const alreadyExists=prev.some(
+
+                m=>m._id===message._id
+
+            );
+
+            if(alreadyExists){
+
+                return prev;
+
+            }
+
+            return [...prev,message];
+
+        });
+
+    });
+
+    return ()=>{
+
+        socket.off("receiveMessage");
+
     };
 
-    setConversationMap((prev) => ({
+},[]);
+
+const fetchEvents=async()=>{
+
+    try{
+
+        const res=await axios.get(
+
+            "/api/events/my-events",
+
+            {
+
+                headers:{
+
+                    Authorization:
+
+                    `Bearer ${localStorage.getItem("token")}`
+
+                }
+
+            }
+
+        );
+
+        setEvents(res.data.events);
+
+        if(res.data.events.length){
+
+            setSelectedEvent(
+
+                res.data.events[0]
+
+            );
+
+        }
+
+    }
+
+    catch(err){
+
+        console.log(err);
+
+    }
+
+}
+useEffect(()=>{
+
+    if(isOrganizer){
+
+        fetchEvents();
+
+    }
+
+},[]);
+
+const fetchParticipants = async (eventId) => {
+
+  try {
+
+    const res = await axios.get(
+
+      `/api/chat/participants/${eventId}`,
+
+      {
+
+        headers: {
+
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+
+        },
+
+      }
+
+    );
+
+    setParticipants(res.data.participants);
+
+    if (res.data.participants.length > 0) {
+
+      openConversation(res.data.participants[0]);
+
+    }
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+useEffect(() => {
+
+  if (
+
+    isOrganizer &&
+
+    selectedEvent
+
+  ) {
+
+    fetchParticipants(selectedEvent._id);
+
+  }
+
+}, [selectedEvent]);
+
+const openConversation = async (participant) => {
+
+  try {
+
+    setSelectedParticipant(participant);
+
+    const res = await axios.get(
+
+      `/api/chat/conversation/${selectedEvent._id}/${participant._id}`,
+
+      {
+
+        headers: {
+
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+
+        },
+
+      }
+
+    );
+
+    setConversationId(
+
+      res.data.conversation._id
+
+    );
+
+    setMessages(
+
+      res.data.messages
+
+    );
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+const sendMessage = async () => {
+
+  if (
+
+    !text.trim() ||
+
+    !conversationId
+
+  )
+
+    return;
+
+  try {
+
+    const res = await axios.post(
+
+      "/api/chat/send",
+
+      {
+
+        conversationId,
+
+        text,
+
+      },
+
+      {
+
+        headers: {
+
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+
+        },
+
+      }
+
+    );
+
+    setMessages((prev) => [
+
       ...prev,
-      [chatKey]: [...(prev[chatKey] || []), newMsg],
-    }));
+
+      res.data.message,
+
+    ]);
+
+    socket.emit(
+
+      "sendMessage",
+
+      res.data.message
+
+    );
 
     setText("");
-  };
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+
+const fetchCustomerConversation = async () => {
+
+  try {
+
+    const res = await axios.get(
+
+      "/api/chat/my-chat",
+
+      {
+
+        headers: {
+
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+
+        },
+
+      }
+
+    );
+
+    if (!res.data.conversation)
+
+      return;
+
+    setConversationId(
+
+      res.data.conversation._id
+
+    );
+
+    setMessages(
+
+      res.data.messages
+
+    );
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+  }
+
+};
+useEffect(() => {
+
+  if (!isOrganizer) {
+
+    fetchCustomerConversation();
+
+  }
+
+}, []);
+
+  const customerChats = [];
 
   return (
     <div className="h-[80vh] rounded-2xl border bg-white dark:bg-slate-950 dark:border-slate-800 overflow-hidden">
@@ -88,26 +368,29 @@ export default function Messages() {
         <div className="overflow-y-auto border-r dark:border-slate-800">
 
           {isOrganizer &&
-            sidebarData.map((event) => (
-              <motion.div
-                key={event.id}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => {
-                  setSelectedEvent(event);
-                  setSelectedUser(event.participants[0]);
-                }}
-                className={`p-4 cursor-pointer border-b dark:border-slate-800 ${
-                  selectedEvent?.id === event.id
-                    ? "bg-blue-50 dark:bg-slate-900"
-                    : ""
-                }`}
-              >
-                <h3 className="font-semibold">{event.event}</h3>
-                <p className="text-sm text-slate-500">
-                  {event.participants.length} participants
-                </p>
-              </motion.div>
-            ))}
+  events.map((event) => (
+
+    <motion.div
+      key={event._id}
+      whileHover={{ scale: 1.02 }}
+      onClick={() => setSelectedEvent(event)}
+      className={`p-4 cursor-pointer border-b dark:border-slate-800 ${
+        selectedEvent?._id === event._id
+          ? "bg-blue-50 dark:bg-slate-900"
+          : ""
+      }`}
+    >
+      <h3 className="font-semibold">
+        {event.title}
+      </h3>
+
+      <p className="text-sm text-slate-500">
+        {event.location}
+      </p>
+
+    </motion.div>
+
+  ))}
         </div>
 
         {/* CHAT AREA */}
@@ -116,18 +399,21 @@ export default function Messages() {
           {/* EVENT HEADER */}
           <div className="p-4 border-b dark:border-slate-800">
             <h2 className="text-xl font-bold">
-              {selectedEvent?.event}
+              {selectedEvent?.title}
             </h2>
 
             <p className="text-sm text-slate-500">
-              📅 {selectedEvent?.date} • 📍{" "}
+              📅
+
+{selectedEvent?.date &&
+new Date(selectedEvent.date).toLocaleDateString()} • 📍{" "}
               {selectedEvent?.location}
             </p>
 
-            {isOrganizer && selectedUser && (
+            {isOrganizer && selectedParticipant && (
               <p className="text-sm mt-1 text-blue-600">
-                Chatting with: {selectedUser.name} 🎟{" "}
-                {selectedUser.ticket}
+                Chatting with: {selectedParticipant.name} 🎟{" "}
+                {selectedParticipant.ticket}
               </p>
             )}
           </div>
@@ -137,32 +423,90 @@ export default function Messages() {
             {/* MESSAGES */}
             <div className="p-4 space-y-3 overflow-y-auto bg-slate-50 dark:bg-slate-900">
 
-              {!chatKey || messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-slate-500">
-                  No messages yet. Start conversation 👋
-                </div>
-              ) : (
-                messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${
-                      msg.sender === "me"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`px-4 py-2 rounded-xl max-w-[70%] ${
-                        msg.sender === "me"
-                          ? "bg-blue-600 text-white"
-                          : "bg-white dark:bg-slate-800"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))
-              )}
+              {messages.length === 0 ? (
+
+<div className="h-full flex items-center justify-center text-slate-500">
+
+No messages yet.
+
+</div>
+
+) : (
+
+messages.map((msg) => {
+
+const isMe = msg.sender._id === user._id;
+
+return (
+
+<div
+
+key={msg._id}
+
+className={`flex mb-3 ${
+isMe
+? "justify-end"
+: "justify-start"
+}`}
+
+>
+
+<div
+
+className={`max-w-[70%] px-4 py-2 rounded-xl ${
+isMe
+? "bg-blue-600 text-white"
+: "bg-white dark:bg-slate-800"
+}`}
+
+>
+
+{
+
+!isMe &&
+
+<p className="font-semibold text-xs mb-1">
+
+{msg.sender.name}
+
+</p>
+
+}
+
+<p>
+
+{msg.text}
+
+</p>
+
+<p className="text-xs opacity-60 mt-2">
+
+{
+
+new Date(msg.createdAt)
+
+.toLocaleTimeString([],{
+
+hour:"2-digit",
+
+minute:"2-digit"
+
+})
+
+}
+
+</p>
+
+</div>
+
+</div>
+
+);
+
+})
+
+)}
+<div ref={bottomRef}></div>
             </div>
 
             {/* PARTICIPANTS (organizer only) */}
@@ -172,22 +516,51 @@ export default function Messages() {
                   Participants
                 </h3>
 
-                {selectedEvent?.participants?.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => setSelectedUser(p)}
-                    className={`p-2 cursor-pointer rounded-lg mb-2 ${
-                      selectedUser?.id === p.id
-                        ? "bg-blue-100 dark:bg-slate-800"
-                        : ""
-                    }`}
-                  >
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-xs text-slate-500">
-                      🎟 {p.ticket}
-                    </p>
-                  </div>
-                ))}
+                {selectedEvent?.participants.map((p)=>(
+
+<div
+
+key={p._id}
+
+onClick={()=>openConversation(p)}
+
+className={`
+
+p-2
+
+cursor-pointer
+
+rounded-lg
+
+mb-2
+
+${
+selectedParticipant?._id===p._id
+?
+"bg-blue-100 dark:bg-slate-800"
+:
+""
+}
+
+`}
+
+>
+
+<p className="font-medium">
+
+{p.name}
+
+</p>
+
+<p className="text-xs text-slate-500">
+
+🎟 {p.ticketType}
+
+</p>
+
+</div>
+
+))}
               </div>
             )}
           </div>
@@ -202,12 +575,12 @@ export default function Messages() {
               }
               className="flex-1 px-3 py-2 border rounded-lg dark:bg-slate-900"
               placeholder="Type a message..."
-              disabled={!chatKey}
+              disabled={!conversationId}
             />
 
             <button
               onClick={sendMessage}
-              disabled={!chatKey}
+              disabled={!conversationId}
               className="bg-blue-600 text-white px-4 rounded-lg disabled:opacity-50"
             >
               Send

@@ -296,6 +296,32 @@ const hasTickets = Object.values(event?.ticketLimits || {})
 
 const isCompleted =
   new Date(event.date) < new Date();
+
+  const handleMessageOrganizer = async () => {
+  try {
+
+    const res = await axios.post(
+
+      `/api/chat/start/${event._id}`,
+
+      {},
+
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+
+    );
+
+    navigate(`/chat/${res.data.conversation._id}`);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+};
   
 
   return (
@@ -448,25 +474,10 @@ setShowTicketModal(true);
             </button>
              {user?.role === "customer" && (
             <button
-  onClick={() => {
-    if (!registered) {
-      showToast(
-        "warning",
-        "Register for this event to chat with the organizer."
-      );
-      return;
-    }
-
-    setChatOpen(true);
-  }}
-  className="
-    px-4 py-2 rounded-lg
-    bg-emerald-600
-    hover:bg-emerald-700
-    text-white
-  "
+    onClick={handleMessageOrganizer}
+    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg"
 >
-  💬 Chat with Organizer
+    Message Organizer
 </button>)}
             {isCompleted && (
   <button

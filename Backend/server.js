@@ -2,6 +2,8 @@ import express from "express";
 import connectDB from "./src/config/mongodb.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
 import eventRoutes from "./src/routes/eventRoutes.js";
 import statsRoutes from "./src/routes/statsRoutes.js";
 import reviewRoutes from "./src/routes/reviewRoutes.js";
@@ -14,6 +16,7 @@ import announcementRoutes from "./src/routes/announcementRoutes.js";
 import favoriteRoutes from "./src/routes/favoriteRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
 import eventGalleryRoutes from "./src/routes/eventGalleryRoutes.js";
+import chatRoutes from "./src/routes/chatRoutes.js";
 
 import path from "path";
 
@@ -22,6 +25,15 @@ import authRoutes from "./src/routes/authRoutes.js";
 dotenv.config();
 
 const app = express();
+
+const server = http.createServer(app);
+
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    credentials: true,
+  },
+});
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -54,13 +66,40 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
 
+
+io.on("connection", (socket) => {
+
+  console.log("User Connected:", socket.id);
+
+  socket.on("join", (userId) => {
+
+  console.log("JOIN DATA RECEIVED:", userId);
+
+  if (!userId) {
+    console.log("NO USER ID RECEIVED");
+    return;
+  }
+
+  socket.join(String(userId));
+
+  console.log("Joined room:", userId);
+
+});
+  socket.on("disconnect", () => {
+
+    console.log("User Disconnected");
+
+  });
+
+});
 const PORT =
   process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+server.listen(PORT, () => {
+
+  console.log(`Server running on port ${PORT}`);
+
 });
 

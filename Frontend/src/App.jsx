@@ -17,6 +17,7 @@ import EventsMap from "./pages/EventsMap.jsx";
 import Messages from "./pages/Messages.jsx";
 import CreateEvent from "./pages/createEvent.jsx";
 import Auth from "./pages/Auth.jsx";
+import Chat from "./pages/Chat";
 
 import Navbar from "./components/Navbar.jsx";
 
@@ -164,6 +165,7 @@ export default function App() {
                 path="/admin/organizers"
                 element={<AdminOrganizers />}
               />
+              <Route path="/chat/:conversationId" element={<Chat />} />
             </Routes>
           </Layout>
         </BrowserRouter>
