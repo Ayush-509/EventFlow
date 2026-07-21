@@ -7,7 +7,11 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Corporate Light Theme */
+html, body, #root {
+  min-height: 100%;
+}
+
+/* Global theme colors */
 body {
   margin: 0;
   min-width: 320px;
@@ -18,6 +22,14 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: #020617;
+  color: #f8fafc;
 }
 
 /* Scrollbar */

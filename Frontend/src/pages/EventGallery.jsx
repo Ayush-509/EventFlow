@@ -87,32 +87,32 @@ export default function EventGallery() {
 
   return (
     <div className="mt-10">
-      <h2 className="text-2xl font-bold mb-6">
+      <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-slate-100">
         📸 Event Gallery
       </h2>
 
       {user && (
-        <div className="bg-white dark:bg-slate-900 border rounded-xl p-5 mb-8 shadow">
+        <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-5 mb-8 shadow transition-colors duration-300">
           <form onSubmit={uploadMedia} className="space-y-4">
             <input
               ref={fileRef}
               type="file"
               accept="image/*,video/*"
               onChange={(e) => setFile(e.target.files[0])}
-              className="w-full border rounded-lg p-3"
+              className="w-full border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
             />
 
             <textarea
               placeholder="Write a caption (optional)"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              className="w-full border rounded-lg p-3"
+              className="w-full border border-slate-300 dark:border-slate-700 rounded-lg p-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
             />
 
             <button
               type="submit"
               disabled={!file || uploading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg disabled:bg-gray-400"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg disabled:bg-slate-400"
             >
               {uploading ? "Uploading..." : "Upload"}
             </button>
@@ -121,7 +121,7 @@ export default function EventGallery() {
       )}
 
       {gallery.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-slate-500 dark:text-slate-400">
           No media uploaded yet.
         </div>
       ) : (
@@ -129,7 +129,7 @@ export default function EventGallery() {
           {gallery.map((item) => (
             <div
               key={item._id}
-              className="border rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow hover:shadow-lg transition"
+              className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white/90 dark:bg-slate-900/90 shadow hover:shadow-lg transition"
             >
               {item.mediaType === "image" ? (
                 <img
@@ -145,17 +145,17 @@ export default function EventGallery() {
               )}
 
               <div className="p-4">
-                <p className="font-semibold">
+                <p className="font-semibold text-slate-900 dark:text-slate-100">
                   {item.uploadedBy?.name || "Unknown User"}
                 </p>
 
                 {item.caption && (
-                  <p className="text-gray-600 dark:text-gray-300 mt-2">
+                  <p className="text-slate-600 dark:text-slate-300 mt-2">
                     {item.caption}
                   </p>
                 )}
 
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                   {new Date(item.createdAt).toLocaleString()}
                 </p>
 

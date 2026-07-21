@@ -10,19 +10,23 @@ import "leaflet/dist/leaflet.css";
 axios.defaults.baseURL = '';
 axios.defaults.withCredentials = true;
 
-// Theme control (force light mode always)
+// Theme control
 function applyThemeFromStorage() {
   try {
     const root = document.documentElement;
     const body = document.body;
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = storedTheme === 'dark' || storedTheme === 'light'
+      ? storedTheme
+      : prefersDark ? 'dark' : 'light';
 
-    // Force LIGHT theme
-    root.classList.remove('dark');
-    body?.classList.remove('dark');
+    root.classList.toggle('dark', theme === 'dark');
+    body?.classList.toggle('dark', theme === 'dark');
+    root.style.colorScheme = theme;
 
-    localStorage.setItem('theme', 'light');
+    localStorage.setItem('theme', theme);
 
-    // optional debug helper
     window.theme = {
       get: () => localStorage.getItem('theme'),
       set: (next) => {

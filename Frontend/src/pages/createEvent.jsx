@@ -64,7 +64,7 @@ const CreateEvent = () => {
 
   return (
   <div className="max-w-5xl mx-auto px-4 py-8">
-    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div className="bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors duration-300">
       
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
@@ -78,7 +78,7 @@ const CreateEvent = () => {
 
         {/* Basic Details */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+          <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Basic Information</h3>
 
           <div className="space-y-4">
             <input
@@ -106,7 +106,7 @@ const CreateEvent = () => {
 
         {/* Location Picker */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
-          <h3 className="font-semibold mb-3">📍 Event Location</h3>
+          <h3 className="font-semibold mb-3 text-slate-900 dark:text-slate-100">📍 Event Location</h3>
 
           <EventLocationPicker
             onLocationSelect={(lat, lng) => {
@@ -125,7 +125,7 @@ const CreateEvent = () => {
 
         {/* Ticket Pricing */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Ticket Pricing</h3>
+          <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Ticket Pricing</h3>
 
           <div className="grid md:grid-cols-2 gap-4">
             <input
@@ -168,7 +168,7 @@ const CreateEvent = () => {
 
         {/* Category */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Category</h3>
+          <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Category</h3>
 
           <select
             value={category}
@@ -191,7 +191,7 @@ const CreateEvent = () => {
 
         {/* Description */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Description</h3>
+          <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Description</h3>
 
           <textarea
             rows={5}
@@ -204,17 +204,17 @@ const CreateEvent = () => {
 
         {/* Poster Upload */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">Event Poster</h3>
+          <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Event Poster</h3>
 
           <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center">
             <input
               type="file"
               onChange={(e) => setPoster(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm"
+              className="block w-full text-sm text-slate-700 dark:text-slate-200"
             />
 
             {poster && (
-              <p className="mt-2 text-sm text-green-600">
+              <p className="mt-2 text-sm text-green-600 dark:text-green-400">
                 Selected: {poster.name}
               </p>
             )}

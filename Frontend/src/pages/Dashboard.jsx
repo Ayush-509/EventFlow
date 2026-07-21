@@ -196,7 +196,7 @@ async function loadEventAnalytics(eventId) {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Dashboard</h1>
         <div className="text-sm flex items-center gap-3 text-slate-600 dark:text-slate-300">
           <span>{user?.name} ({user?.role})</span>
           <button onClick={logout} className="underline hover:text-red-500">
@@ -218,7 +218,7 @@ async function loadEventAnalytics(eventId) {
       </p>
     </div>
 
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-5 shadow-lg">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-5 shadow-lg transition-colors duration-300">
       {mine.length === 0 ? (
         <div className="text-center text-sm text-slate-500 py-10">
           No registrations found yet.
@@ -416,7 +416,7 @@ async function loadEventAnalytics(eventId) {
     </div>
 
     {/* Primary Trend Analysis (Line + Bar Chart Combo) */}
-    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">
       <div className="mb-4">
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg tracking-tight">Revenue & Tickets Sold Over Time</h3>
         <p className="text-xs text-slate-400 dark:text-slate-500">Performance timeline overview</p>
@@ -440,7 +440,7 @@ async function loadEventAnalytics(eventId) {
     {/* Secondary Distribution Matrix (Upgraded Donut Charts) */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Events By Category */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between transition-colors duration-300">
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Events By Category</h3>
         <div className="h-[240px] w-full flex items-center justify-center relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -468,7 +468,7 @@ async function loadEventAnalytics(eventId) {
       </div>
 
       {/* Revenue By Category */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between transition-colors duration-300">
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Revenue By Category</h3>
         <div className="h-[240px] w-full flex items-center justify-center relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -496,7 +496,7 @@ async function loadEventAnalytics(eventId) {
       </div>
 
       {/* Attendees By Category */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between transition-colors duration-300">
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base tracking-tight mb-2">Attendees By Category</h3>
         <div className="h-[240px] w-full flex items-center justify-center relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -525,7 +525,7 @@ async function loadEventAnalytics(eventId) {
     </div>
 
     {/* Horizontal Bar Chart: Revenue By Specific Events */}
-    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">
       <div className="mb-4">
         <h3 className="font-bold text-slate-800 dark:text-slate-200 text-lg tracking-tight">Top Performing Events</h3>
         <p className="text-xs text-slate-400 dark:text-slate-500">Ranked by overall gross revenue generation</p>
@@ -550,7 +550,7 @@ async function loadEventAnalytics(eventId) {
       </div>
 
       {!myEvents || myEvents.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center shadow-sm border border-slate-100 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-16 text-center shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">
           <p className="text-slate-500 dark:text-slate-400 font-medium">No Events found.</p>
         </div>
       ) : (
@@ -563,7 +563,7 @@ async function loadEventAnalytics(eventId) {
             return (
               <div
                 key={event._id}
-                className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-300 p-6 border border-black dark:border-slate-800 flex flex-col justify-between group"
+                className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-300 p-6 border border-slate-200 dark:border-slate-800 flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex justify-between items-center mb-4">
@@ -654,17 +654,17 @@ async function loadEventAnalytics(eventId) {
   <div className="space-y-4">
 
     {/* Pending Events */}
-    <div className="rounded-2xl border p-4 bg-white dark:bg-slate-900">
-      <h2 className="font-semibold mb-3">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900 transition-colors duration-300">
+      <h2 className="font-semibold mb-3 text-slate-900 dark:text-slate-100">
         Pending Events
       </h2>
 
       {Pending.map((e) => (
         <div
           key={e._id}
-          className="flex justify-between items-center p-2 border rounded-lg mb-2"
+          className="flex justify-between items-center p-2 border border-slate-200 dark:border-slate-700 rounded-lg mb-2 bg-slate-50 dark:bg-slate-800/60"
         >
-          <span>{e.title}</span>
+          <span className="text-slate-700 dark:text-slate-200">{e.title}</span>
 
           <div className="flex gap-2">
             <button
@@ -699,8 +699,8 @@ async function loadEventAnalytics(eventId) {
             <div className="relative bg-white dark:bg-slate-950 rounded-3xl shadow-2xl overflow-hidden border border-white/10">
               
               {/* Header */}
-              <div className="flex justify-between items-center p-4 border-b dark:border-slate-800">
-                <h3 className="font-semibold text-lg">Your Event Pass</h3>
+              <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100">Your Event Pass</h3>
 
                 <div className="flex gap-2">
                   <button
@@ -733,13 +733,13 @@ async function loadEventAnalytics(eventId) {
 
       {deleteEventId && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-md">
+<div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-md border border-slate-200 dark:border-slate-800">
 
-      <h2 className="text-xl font-bold mb-3">
+      <h2 className="text-xl font-bold mb-3 text-slate-900 dark:text-slate-100">
         Delete Event
       </h2>
 
-      <p className="mb-6">
+      <p className="mb-6 text-slate-700 dark:text-slate-300">
         Are you sure you want to delete this event?
       </p>
 

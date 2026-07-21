@@ -24,7 +24,7 @@ export default function Favorites() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-slate-500">
+      <div className="text-center py-20 text-slate-500 dark:text-slate-400">
         Loading favourites...
       </div>
     );
@@ -32,7 +32,7 @@ export default function Favorites() {
 
   if (events.length === 0) {
     return (
-      <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 text-center">
+      <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-10 text-center transition-colors duration-300">
         <div className="text-6xl mb-4">❤️</div>
 
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
@@ -70,7 +70,7 @@ export default function Favorites() {
           <Link
             key={e._id}
             to={`/events/${e._id}`}
-            className="group relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-1"
+            className="group relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-1"
           >
             <img
               src={e.posterUrl || "/placeholder.svg"}

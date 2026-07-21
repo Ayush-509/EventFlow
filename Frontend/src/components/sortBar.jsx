@@ -24,7 +24,7 @@ const SortBar = ({ onSortChange }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">Sort by</span>
+      <span className="text-sm text-slate-500 dark:text-slate-400">Sort by</span>
       {SORT_OPTIONS.map(({ key, label }) => (
         <button
           key={key}

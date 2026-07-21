@@ -36,7 +36,7 @@ export default function Navbar({ theme, setTheme }) {
   }, [user]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-blue-100 dark:border-purple-500/20 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-blue-100 dark:border-purple-500/20 shadow-sm text-slate-700 dark:text-slate-200">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         
         {/* Logo */}
@@ -54,31 +54,22 @@ export default function Navbar({ theme, setTheme }) {
             to="/"
             className={
               location.pathname === "/"
-                ? "font-semibold text-blue-600"
-                : ""
+                ? "font-semibold text-blue-600 dark:text-purple-400"
+                : "transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-400"
             }
           >
             Home
           </Link>
 
           <Link
-  to="/messages"
-  className={
-    location.pathname === "/messages"
-      ? "font-semibold text-blue-600"
-      : ""
-  }
->
-  📨 Messages
-</Link>
-
-          <Link
-          to="/events-map"
-          className={
-          location.pathname === "/events-map"
-          ? "font-semibold text-blue-600"
-          : ""
-          }>Explore Map
+            to="/events-map"
+            className={
+              location.pathname === "/events-map"
+                ? "font-semibold text-blue-600 dark:text-purple-400"
+                : "transition-colors duration-200 hover:text-blue-600 dark:hover:text-purple-400"
+            }
+          >
+            Explore Map
           </Link>
 
           {/* User Not Logged In */}
@@ -90,7 +81,7 @@ export default function Navbar({ theme, setTheme }) {
             <div className="relative">
               <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-slate-700 dark:text-slate-200"
               >
                 <img
                   src={
@@ -109,7 +100,7 @@ export default function Navbar({ theme, setTheme }) {
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-slate-700 dark:text-slate-200">
                   
                   <Link
                     to="/profile"
@@ -190,7 +181,7 @@ export default function Navbar({ theme, setTheme }) {
 
           {/* Theme Toggle */}
           <button
-            className="input px-3 py-2 text-sm"
+            className="input px-3 py-2 text-sm text-slate-700 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             onClick={() => {
               const next =
                 theme === "dark" ? "light" : "dark";

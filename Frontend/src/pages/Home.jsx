@@ -271,10 +271,10 @@ async function toggleFavorite(
         </div>
       )}
 
-      <div className="rounded-3xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-wrap items-center gap-3 shadow-sm">
+      <div className="rounded-3xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-wrap items-center gap-3 shadow-sm transition-colors duration-300">
 
-        <div className="flex-1 min-w-[250px] flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800">
-          <span className="material-symbols-outlined px-3 text-slate-500">search</span>
+        <div className="flex-1 min-w-[250px] flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+          <span className="material-symbols-outlined px-3 text-slate-500 dark:text-slate-400">search</span>
           <input
             type="text"
             placeholder="Search events..."
@@ -380,7 +380,7 @@ async function toggleFavorite(
       </section>
 
       {(dash.categories.length > 0 || dash.upcomingByMonth.length > 0) && (
-        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 backdrop-blur-xl p-5">
+        <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 backdrop-blur-xl p-5 transition-colors duration-300">
           <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100">
             Event statistics
           </h2>

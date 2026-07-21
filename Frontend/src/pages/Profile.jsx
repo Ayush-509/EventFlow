@@ -118,7 +118,7 @@ export default function Profile() {
             {user.name || "User"}
           </h2>
 
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-slate-500 dark:text-slate-400 capitalize">
             {user.role}
           </p>
 

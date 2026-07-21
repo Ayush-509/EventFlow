@@ -14,10 +14,8 @@ import Favorites from "./pages/Favorites.jsx";
 import AdminCustomers from "./pages/AdminCustomers.jsx";
 import AdminOrganizers from "./pages/AdminOrganizers.jsx";
 import EventsMap from "./pages/EventsMap.jsx";
-import Messages from "./pages/Messages.jsx";
 import CreateEvent from "./pages/createEvent.jsx";
 import Auth from "./pages/Auth.jsx";
-import Chat from "./pages/Chat";
 
 import Navbar from "./components/Navbar.jsx";
 
@@ -64,10 +62,10 @@ function Layout({ children }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50 text-slate-900 transition-colors duration-300 dark:from-slate-950 dark:via-slate-900 dark:to-purple-950 dark:text-slate-100">
       <Navbar theme={theme} setTheme={setTheme} />
 
-      <section className="animated-hero-bg border-b border-blue-100 dark:border-purple-500/20">
+      <section className="animated-hero-bg border-b border-blue-100 transition-colors duration-300 dark:border-purple-500/20">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-700 to-cyan-600 dark:from-purple-300 dark:to-cyan-300 bg-clip-text text-transparent">
             Discover and Manage Events
@@ -152,8 +150,6 @@ export default function App() {
 
               <Route path="/events-map" element={<EventsMap />} />
 
-              <Route path="/messages" element={<Messages />} />
-
               <Route path="/createEvent" element={<CreateEvent />} />
 
               <Route
@@ -165,7 +161,6 @@ export default function App() {
                 path="/admin/organizers"
                 element={<AdminOrganizers />}
               />
-              <Route path="/chat/:conversationId" element={<Chat />} />
             </Routes>
           </Layout>
         </BrowserRouter>

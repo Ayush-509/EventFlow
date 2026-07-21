@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext.jsx';
 import AnnouncementSection from "../components/AnnouncementSection";
 import EventLocationMap from "../components/EventLocationMap.jsx";
-import ChatDrawer from "../components/ChatDrawer.jsx";
 
 export default function EventDetails() {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ export default function EventDetails() {
   const [selectedTicketType, setSelectedTicketType] = useState("General");
   const [otherEvents, setOtherEvents] = useState([]);
   const [showMap, setShowMap] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [paying, setPaying] = useState(false);
   const showToast = (type, message) => {
     setToast({ open: true, type, message });
@@ -297,33 +295,6 @@ const hasTickets = Object.values(event?.ticketLimits || {})
 const isCompleted =
   new Date(event.date) < new Date();
 
-  const handleMessageOrganizer = async () => {
-  try {
-
-    const res = await axios.post(
-
-      `/api/chat/start/${event._id}`,
-
-      {},
-
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-
-    );
-
-    navigate(`/chat/${res.data.conversation._id}`);
-
-  } catch (error) {
-
-    console.log(error);
-
-  }
-};
-  
-
   return (
     <div className="space-y-6">
       {/* Toast */}
@@ -367,7 +338,7 @@ const isCompleted =
           <div className="text-sm text-slate-500 dark:text-slate-400">
             {new Date(event.date).toLocaleString()} • {event.location}
           </div>
-          <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+          <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white/70 dark:bg-slate-900/70">
 
   {/* Toggle Button */}
   <button
@@ -472,13 +443,6 @@ setShowTicketModal(true);
             <button className="btn-outline" onClick={shareEvent}>
               Share
             </button>
-             {user?.role === "customer" && (
-            <button
-    onClick={handleMessageOrganizer}
-    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg"
->
-    Message Organizer
-</button>)}
             {isCompleted && (
   <button
     onClick={() =>
@@ -532,8 +496,8 @@ setShowTicketModal(true);
         
         {user?.role === "customer" &&
  !isCompleted && (
-  <div className="bg-blue-50 border border-blue-300 rounded-lg p-3 mb-3">
-    <p className="text-blue-700">
+  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-800 rounded-lg p-3 mb-3">
+    <p className="text-blue-700 dark:text-blue-300">
       Reviews can be submitted after the event has ended.
     </p>
   </div>
@@ -542,8 +506,8 @@ setShowTicketModal(true);
  isCompleted &&
  !registered &&
  !hasReviewed && (
-  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
-    <p className="text-yellow-700">
+  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-800 rounded-lg p-3 mb-3">
+    <p className="text-yellow-700 dark:text-yellow-300">
       Only registered participants can review this event.
     </p>
   </div>
@@ -634,14 +598,9 @@ setShowTicketModal(true);
   </div>
 )}
 
-      <ChatDrawer
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
-        eventTitle={event?.title || 'Event Chat'}
-      />
       {showTicketModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[400px]">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[400px] border border-slate-200 dark:border-slate-800">
 
       <h2 className="text-xl font-bold mb-4">
         Select Ticket Type

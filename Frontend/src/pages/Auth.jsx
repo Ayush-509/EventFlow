@@ -50,14 +50,14 @@ export default function Auth() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+      <div className="w-full max-w-md bg-white/90 dark:bg-slate-900/90 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 transition-colors duration-300">
 
         {/* Header */}
-        <h1 className="text-3xl font-bold text-center mb-2">
+        <h1 className="text-3xl font-bold text-center mb-2 text-slate-900 dark:text-slate-100">
           EventFlow
         </h1>
 
-        <p className="text-center text-gray-500 mb-6">
+        <p className="text-center text-slate-500 dark:text-slate-400 mb-6">
           Welcome to EventFlow
         </p>
 
@@ -69,7 +69,7 @@ export default function Auth() {
             className={`flex-1 py-3 rounded-l-xl font-medium transition ${
               !isSignup
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700"
+                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
             }`}
           >
             Sign In
@@ -81,7 +81,7 @@ export default function Auth() {
             className={`flex-1 py-3 rounded-r-xl font-medium transition ${
               isSignup
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700"
+                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
             }`}
           >
             Create Account
@@ -90,7 +90,7 @@ export default function Auth() {
 
         {/* Error */}
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600">
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300">
             {error}
           </div>
         )}
@@ -178,7 +178,7 @@ export default function Auth() {
             <div className="flex items-center my-5">
               <div className="flex-1 border-t"></div>
 
-              <span className="px-3 text-gray-500">
+              <span className="px-3 text-slate-500 dark:text-slate-400">
                 OR
               </span>
 
