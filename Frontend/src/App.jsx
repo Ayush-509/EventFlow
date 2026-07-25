@@ -16,6 +16,8 @@ import AdminOrganizers from "./pages/AdminOrganizers.jsx";
 import EventsMap from "./pages/EventsMap.jsx";
 import CreateEvent from "./pages/createEvent.jsx";
 import Auth from "./pages/Auth.jsx";
+import Chat from "./pages/Chat";
+import OrganizerChats from "./pages/OrganizerChats";
 
 import Navbar from "./components/Navbar.jsx";
 
@@ -122,11 +124,13 @@ export default function App() {
               />
 
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/organizer/chats" element={<OrganizerChats />} />
 
               <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
               />
+              <Route path="/chat/:conversationId" element={<Chat />} />
 
               <Route
                 path="/change-password"

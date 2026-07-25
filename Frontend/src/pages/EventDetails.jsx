@@ -210,6 +210,26 @@ if (!window.Razorpay) {
 }
 };
 
+const handleMessageOrganizer = async () => {
+  try {
+    const token = localStorage.getItem("token"); // change if your app stores token differently
+
+    const res = await axios.post(
+      "/api/chat/start",
+      { eventId: event._id },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    navigate(`/chat/${res.data.conversation._id}`);
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+  }
+};
+
 function getDirections() {
   if (!event?.latitude || !event?.longitude) return;
 
@@ -439,6 +459,12 @@ setShowTicketModal(true);
   : user?.role !== "customer"
   ? "Customers Only"
   : "Register"}
+</button>
+<button
+  onClick={handleMessageOrganizer}
+  className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+>
+  Message Organizer
 </button>
             <button className="btn-outline" onClick={shareEvent}>
               Share

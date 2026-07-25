@@ -3,6 +3,8 @@ import connectDB from "./src/config/mongodb.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
+import { Server } from "socket.io";
+import chatSocket from "./src/socket/chatSocket.js";
 import eventRoutes from "./src/routes/eventRoutes.js";
 import statsRoutes from "./src/routes/statsRoutes.js";
 import reviewRoutes from "./src/routes/reviewRoutes.js";
@@ -15,6 +17,7 @@ import announcementRoutes from "./src/routes/announcementRoutes.js";
 import favoriteRoutes from "./src/routes/favoriteRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
 import eventGalleryRoutes from "./src/routes/eventGalleryRoutes.js";
+import chatRoutes from "./src/routes/chatRoutes.js"
 
 import path from "path";
 
@@ -25,6 +28,13 @@ dotenv.config();
 const app = express();
 
 const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 app.use(
   cors({
@@ -33,7 +43,7 @@ app.use(
   })
 );
 app.use(express.json());
-
+chatSocket(io);
 connectDB()
 
 app.get("/", (req, res) => {
@@ -58,6 +68,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
 
 const PORT =
   process.env.PORT || 5000;
