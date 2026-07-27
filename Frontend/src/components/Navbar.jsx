@@ -61,6 +61,17 @@ export default function Navbar({ theme, setTheme }) {
             Home
           </Link>
 
+
+          {user?.role === "organizer" && (
+                    <Link
+                      to="/organizer/chats"
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    >
+                      Messages
+                    </Link>
+                  )}
+
           <Link
             to="/events-map"
             className={
